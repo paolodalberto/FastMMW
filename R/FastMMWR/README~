@@ -1,0 +1,111 @@
+1) Preparing the library.
+
+   R uses dynamic library and the first thing is to make sure that a
+   high performance BLAS is used. Ideally the same one used to create
+   the FastMMW libraries. 
+   
+   check what BLAS is used 
+
+   > ldd /usr/lib/R/bin/exec/R | grep blas
+   libblas.so.3gf => /usr/lib/libblas.so.3gf (0x00007f178c180000)
+
+   Then make sure that the soft link points to you high performance
+   BLAS. In this case, I use Goto's
+   
+   sudo mv /usr/lib/libblas.so.3gf /usr/lib/libblas.so.3gf.old
+   sudo ln -s /home/paolo/fusion/paolo/Desktop/MM/GotoBLAS2/libgoto.so  /usr/lib/libblas.so.3gf
+
+
+   For example, in the R command line:
+   > system.time(C<-A%*%B)
+     user  system elapsed 
+     31.570   0.150   8.756 
+   
+   This translate to a call to dgemm (if A and B are regular matrices) 
+
+2) How to build and install the R FastMMWR package
+
+   When creating the package, we will need to make available the BLAS
+   library for compiling against our library.
+
+   sudo mv /usr/lib64/R/lib/libRblas.so /usr/lib64/R/lib/libRblas.so.old
+   sudo ln -s /home/paolo/fusion/paolo/Desktop/MM/GotoBLAS2/libgoto.so /usr/lib64/R/lib/libRblas.so
+
+   In the R documentation libRblas should be a soft link to the BLAS
+   library above. In my version is not. So I use it for linking.
+
+   Notice: if your are using ATLAS, build the library and link them as above. 
+ 
+
+   Now to build and install   
+
+   R CMD build FastMMWR ; sudo R CMD INSTALL FastMMWR_0.0.tar.gz
+
+* checking for file †¡FastMMWR/DESCRIPTION†¢ ... OK
+* preparing †¡FastMMWR†¢:
+* checking DESCRIPTION meta-information ... OK
+* cleaning src
+/bin/tar: FastMMWR/.#README: File removed before we read it
+ ERROR
+copying to build directory failed
+[sudo] password for paolo: 
+Sorry, try again.
+[sudo] password for paolo: 
+* installing to library †¡/home/paolo/R/x86_64-pc-linux-gnu-library/2.12†¢
+* installing *source* package †¡FastMMWR†¢ ...
+** libs
+** arch - 
+/usr/bin/R CMD SHLIB FastMMWR.c   
+make[1]: Entering directory `/tmp/Rtmp5F47vz/R.INSTALL7554d9ed/FastMMWR/src'
+gcc -I/usr/share/R/include -I/usr/include -I ../include -I /usr/share/R/include/ -I ./  -DOMP_NUM_THREADS=4 -DAPPLICATION=1 -DGOTO_BLAS  -pthread -fopenmp -O2   -msse3 -fPIC -march=opteron -mtune=opteron     -fpic  -std=gnu99 -O3 -pipe  -g -c FastMMWR.c -o FastMMWR.o
+In file included from FastMMWR.c:43:0:
+FastMMWRcode.h: In function †¡s_mm_leaf_computation_maddB†¢:
+FastMMWRcode.h:819:3: warning: implicit declaration of function †¡sgemm_†¢
+FastMMWRcode.h: In function †¡d_mm_leaf_computation_maddB†¢:
+FastMMWRcode.h:833:3: warning: implicit declaration of function †¡dgemm_†¢
+In file included from FastMMWR.c:43:0:
+FastMMWRcode.h: In function †¡c_mm_leaf_computation_maddB†¢:
+FastMMWRcode.h:847:3: warning: implicit declaration of function †¡cgemm_†¢
+FastMMWRcode.h: In function †¡z_mm_leaf_computation_maddB†¢:
+FastMMWRcode.h:861:3: warning: implicit declaration of function †¡zgemm_†¢
+gcc -shared -o FastMMWR.so FastMMWR.o -L../lib/ -ldfastmm -lsfastmm -lscfastmm -ldcfastmm -lpthread -lm -lgomp -lRblas -L/usr/lib64/R/lib -lR
+make[1]: Leaving directory `/tmp/Rtmp5F47vz/R.INSTALL7554d9ed/FastMMWR/src'
+installing to /home/paolo/R/x86_64-pc-linux-gnu-library/2.12/FastMMWR/libs
+** R
+** data
+Warning: empty 'data' directory
+** preparing package for lazy loading
+** help
+No man pages found in package  †¡FastMMWR†¢ 
+*** installing help indices
+** building package indices ...
+** testing if installed package can be loaded
+* DONE (FastMMWR)
+
+
+
+
+3) How to use it within R: 
+
+   % how to call the local 
+   > library(FastMMWR)
+   >  system.time(d_wmR(a,A,b,B))
+   ----------> get time 8.050608e+00 sec<------
+   user  system elapsed 
+   31.49    0.75    9.71 
+
+
+
+4) Notes about how to create the R interface.
+   
+   The R interface and function calls are built automatically:
+
+   python $SCRIPTS/generateBasicInterface.py -c src/FastMMWRcode.h -r R/FastMMWR.R >> ./NAMESPACE
+
+   in case more methods will be implemented, the generateBasicInterface.py is avail in the Script directory.
+
+   This creates the C interface and the R interface. The R interface
+   provides example how to call the FastMMW algorithms and I will
+   provide better manual and descriptions. In practice, you may want
+   to call the .C within directly to avoid useless copy of data.
+

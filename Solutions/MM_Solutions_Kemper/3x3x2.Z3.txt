@@ -1,0 +1,59 @@
+#
+#  Yacas script s3x3x2.solution.txt created 04 Nov 2012 01:36:02
+#
+#  akBoole + MS Z3
+#
+#  Fast matrix multiplication method for 3x3x2 matrices.
+#
+#  intermediate products: 14
+#
+#  literal 0 from mod2: 204
+#  literal 1 from mod2: 76
+#  literal +1 from rev: 36
+#  literal -1 from rev: 40
+
+# special case:
+# a33 := 0;
+
+
+P01 := (a22) * (b12-b22);
+P02 := (a11-a23) * (-b12-b31);
+P03 := (a31+a32) * (-b21);
+P04 := (a12) * (-b21+b31);
+P05 := (a11-a12-a13) * (-b31);
+P06 := (a13-a23) * (-b31+b32);
+P07 := (a12+a22+a32) * (b21-b22);
+P08 := (-a21-a22+a23) * (b12);
+P09 := (-a31) * (b11-b21);
+P10 := (-a23) * (-b12-b32);
+P11 := (a12) * (-b22+b31);
+P12 := (-a11) * (-b11-b31);
+P13 := (-a22+a31) * (b12-b21);
+P14 := (a11-a21-a31) * (b11-b12);
+
+c11 := -P04+P05+P12;
+c12 := -P02+P05+P06+P10-P11;
+c21 := P02-P08+P09+P12+P13-P14;
+c22 := -P01-P08+P10;
+c31 := -P03-P09;
+c32 := P01-P03-P04-P07+P11+P13;
+
+Simplify(c11 - (a11*b11+a12*b21+a13*b31));
+Simplify(c12 - (a11*b12+a12*b22+a13*b32));
+Simplify(c21 - (a21*b11+a22*b21+a23*b31));
+Simplify(c22 - (a21*b12+a22*b22+a23*b32));
+Simplify(c31 - (a31*b11+a32*b21));
+Simplify(c32 - (a31*b12+a32*b22));
+
+#  Yacas detects no errors. OK!
+
+#  Rank of 14x14 matrix H'*H is 14
+
+#  No linear dependencies between intermediate products found
+
+#  add operations: 19
+#  sub operations: 23
+
+#
+#  end of 3x3x2 solution s3x3x2.solution.txt
+#

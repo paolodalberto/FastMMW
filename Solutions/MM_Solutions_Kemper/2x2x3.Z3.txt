@@ -1,0 +1,52 @@
+#
+#  Yacas script s2x2x3.solution.txt created 04 Nov 2012 01:54:37
+#
+#  akBoole + MS Z3
+#
+#  Fast matrix multiplication method for 2x2x3 matrices.
+#
+#  intermediate products: 11
+#
+#  literal 0 from mod2: 106
+#  literal 1 from mod2: 70
+#  literal +1 from rev: 32
+#  literal -1 from rev: 38
+
+P01 := (a11+a12) * (-b12-b13);
+P02 := (a12) * (b11-b23);
+P03 := (a21) * (-b11+b21+b22);
+P04 := (a21+a22) * (-b21-b22);
+P05 := (a22) * (b22);
+P06 := (-a11-a12-a21) * (b11-b12-b13);
+P07 := (a21) * (b12);
+P08 := (-a12+a21) * (-b12-b13+b21+b22);
+P09 := (-a12) * (b11-b12-b13+b22);
+P10 := (a12+a22) * (b21-b23);
+P11 := (-a11-a21) * (b11-b13);
+
+c11 := -P01+P03-P06-P08+P09;
+c12 := P06-P07-P09-P11;
+c13 := -P01-P02-P06+P07+P11;
+c21 := -P03-P04-P05;
+c22 := P05+P07;
+c23 := P02-P04-P05-P07-P08+P09-P10;
+
+Simplify(c11 - (a11*b11+a12*b21));
+Simplify(c12 - (a11*b12+a12*b22));
+Simplify(c13 - (a11*b13+a12*b23));
+Simplify(c21 - (a21*b11+a22*b21));
+Simplify(c22 - (a21*b12+a22*b22));
+Simplify(c23 - (a21*b13+a22*b23));
+
+#  Yacas detects no errors. OK!
+
+#  Rank of 11x11 matrix H'*H is 11
+
+#  No linear dependencies between intermediate products found
+
+#  add operations: 15
+#  sub operations: 27
+
+#
+#  end of 2x2x3 solution s2x2x3.solution.txt
+#

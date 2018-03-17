@@ -1,0 +1,110 @@
+#
+#  Extraction of matrix multiplication script
+
+#  A multiplication procedure with one row and one column less is derived by 
+#  setting the row and colum elements to 0 and leaving out all 0 products.
+#
+#  Intermediate products: 51
+#  Add/sub operations:    409
+
+#  Input file:  s5x5x5_100.Makarov.txt
+#  Output file: 4x4.Makarov.extracted.txt
+#  A row cleared: 5
+#  A col cleared: 5
+#  B row cleared: 5
+#  B col cleared: 5
+#  Created:     11.11.2012 18:11
+
+#  Verified ok!
+
+#  51 intermediate products:
+P01 := (a11+a12-a21-a22-a31-a32+a41+a42) * b12;
+P02 := (a11+a12-a13-a14-a21-a22+a23+a24) * (b12+b14);
+P03 := (-a13-a14+a23+a24+a33+a34-a43-a44) * b32;
+P04 := (-a31-a32+a33+a34+a41+a42-a43-a44) * b34;
+P05 := (a13+a14-a23-a24) * (b12+b14+b32+b34);
+P06 := (-a13-a14+a23+a24+a31+a32-a41-a42) * (b12+b14+b34);
+P07 := (-a31-a32+a41+a42) * (b14+b34);
+P08 := (a34-a44) * (-b14+b24+b34-b44);
+P09 := (a12-a22) * (-b14+b24);
+P10 := (a14-a24) * (b32-b42);
+P11 := (-a32-a34+a42+a44) * (-b14+b24);
+P12 := (a14-a24) * (b34-b44);
+P13 := (-a12+a22) * (-b12+b22);
+P14 := (-a34+a44) * (b14-b24-b32+b42);
+P15 := (a12-a22-a32+a42) * (-b12+b14+b22-b24);
+P16 := a11 * b13;
+P17 := a13 * b33;
+P18 := (-a11+a31) * (-b11+b13);
+P19 := (-a13+a33) * b33;
+P20 := a13 * (b31-b33);
+P21 := a31 * (b11-b13);
+P22 := (-a11+a31) * b11;
+P23 := a33 * b31;
+P24 := a21 * (b11-b12-b13+b14-b21+b22+b23-b24);
+P25 := (a21+a41) * (b11-b12-b21+b22-b31+b32+b41-b42);
+P26 := a23 * (-b31+b32+b33-b34+b41-b42-b43+b44);
+P27 := a43 * (-b13+b14+b23-b24+b33-b34-b43+b44);
+P28 := (a21+a23+a41+a43) * (b31-b32-b41+b42);
+P29 := (a21+a41+a43) * (b13-b14-b23+b24-b31+b32+b41-b42);
+P30 := (a41+a43) * (-b13+b14+b23-b24);
+P31 := (-a14+a23+a24+a34-a43-a44) * (b32+b34+b41-b42+b43-b44);
+P32 := (-a12+a21+a22-a34+a43+a44) * (b12+b21-b22+b34+b43-b44);
+P33 := (a12-a21-a22-a32+a41+a42) * (b12+b14+b21-b22+b23-b24);
+P34 := (-a12-a14+a21+a22+a23+a24) * (b34+b43-b44);
+P35 := (-a12+a21+a22) * (b14+b23-b24-b34-b43+b44);
+P36 := (-a34+a43+a44) * (-b12-b21+b22+b32+b41-b42);
+P37 := (-a32-a34+a41+a42+a43+a44) * (b12+b21-b22);
+P38 := (a12-a14) * b21;
+P39 := a14 * (b21+b41);
+P40 := a32 * b23;
+P41 := a34 * b43;
+P42 := (a12+a32) * (b21+b23+b41+b43);
+P43 := (a12-a14+a32) * (b21+b41+b43);
+P44 := (-a12+a14-a32+a34) * (b41+b43);
+P45 := (a23+a24-a43-a44) * (-b41+b42-b43+b44);
+P46 := (a21+a22+a43+a44) * (-b21+b22-b43+b44);
+P47 := (a21+a22-a41-a42) * (b21-b22+b23-b24);
+P48 := (a21+a22+a23+a24) * (-b43+b44);
+P49 := (a21+a22) * (-b23+b24+b43-b44);
+P50 := (a43+a44) * (b21-b22-b41+b42);
+P51 := (a41+a42+a43+a44) * (-b21+b22);
+
+#  Elements of target matrix C[] as sums of products:
+c11 := P16 + P17 + P18 + P20 + P21 + P38 + P39;
+c12 := P01 + P05 + P06 + P07 + P31 + P32 - P34 + P36 + P38 + P39 + P45 + P46 - P48 + P50;
+c13 := P16 + P17 - P39 - P40 + P42 - P43;
+c14 :=  - P01 + P02 - P06 - P07 + P34 + P35 - P39 - P40 + P42 - P43 + P48 + P49;
+c21 := P10 + P13 + P24 + P28 + P29 + P30 + P31 + P32 - P34 + P36 + P38 + P39;
+c22 := P10 + P13 + P31 + P32 - P34 + P36 + P38 + P39 + P45 + P46 - P48 + P50;
+c23 :=  - P09 + P12 + P26 + P28 + P29 + P30 + P34 + P35 - P39 - P40 + P42 - P43;
+c24 :=  - P09 + P12 + P34 + P35 - P39 - P40 + P42 - P43 + P48 + P49;
+c31 := P16 + P18 + P21 + P22 + P23 - P38 - P41 + P43 + P44;
+c32 := P03 + P05 + P06 + P07 + P36 + P37 - P38 - P41 + P43 + P44 + P50 + P51;
+c33 := P16 + P17 + P18 + P19 + P22 + P40 + P41;
+c34 := P04 - P07 + P32 + P33 + P35 - P37 + P40 + P41 + P46 + P47 + P49 - P51;
+c41 := P09 + P11 + P13 + P14 + P15 - P24 + P25 - P29 - P30 + P36 + P37 - P38 - P41 + P43 + P44;
+c42 := P09 + P11 + P13 + P14 + P15 + P36 + P37 - P38 - P41 + P43 + P44 + P50 + P51;
+c43 := P08 + P11 + P27 - P30 + P32 + P33 + P35 - P37 + P40 + P41;
+c44 := P08 + P11 + P32 + P33 + P35 - P37 + P40 + P41 + P46 + P47 + P49 - P51;
+
+#  Yacas validation expressions should result in 0:
+Simplify(c11 - (a11*b11+a12*b21+a13*b31+a14*b41));
+Simplify(c12 - (a11*b12+a12*b22+a13*b32+a14*b42));
+Simplify(c13 - (a11*b13+a12*b23+a13*b33+a14*b43));
+Simplify(c14 - (a11*b14+a12*b24+a13*b34+a14*b44));
+Simplify(c21 - (a21*b11+a22*b21+a23*b31+a24*b41));
+Simplify(c22 - (a21*b12+a22*b22+a23*b32+a24*b42));
+Simplify(c23 - (a21*b13+a22*b23+a23*b33+a24*b43));
+Simplify(c24 - (a21*b14+a22*b24+a23*b34+a24*b44));
+Simplify(c31 - (a31*b11+a32*b21+a33*b31+a34*b41));
+Simplify(c32 - (a31*b12+a32*b22+a33*b32+a34*b42));
+Simplify(c33 - (a31*b13+a32*b23+a33*b33+a34*b43));
+Simplify(c34 - (a31*b14+a32*b24+a33*b34+a34*b44));
+Simplify(c41 - (a41*b11+a42*b21+a43*b31+a44*b41));
+Simplify(c42 - (a41*b12+a42*b22+a43*b32+a44*b42));
+Simplify(c43 - (a41*b13+a42*b23+a43*b33+a44*b43));
+Simplify(c44 - (a41*b14+a42*b24+a43*b34+a44*b44));
+
+#  End of file 4x4.Makarov.extracted.txt
+

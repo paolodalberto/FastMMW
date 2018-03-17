@@ -1,0 +1,63 @@
+#
+#  Yacas script s3x3x2_14.solution.txt created 30 Dez 2012 18:23:10
+#
+#  akBoole + MS Z3
+#  Using the circuit to CNF converter BC2CNF
+#  Extra constaints imposed for Brent's Equations with left-hand-side = 1
+#
+#  Solution time 363,58s
+#
+#  Fast matrix multiplication method for 3x3x2 matrices.
+#
+#  intermediate products: 14
+#
+#  literal 0 from mod2: 199
+#  literal 1 from mod2: 81
+#  literal +1 from rev: 30
+#  literal -1 from rev: 51
+
+# special case:
+# a33 := 0;
+
+
+P01 := (a21+a22+a31) * (b11-b21-b22);
+P02 := (a11-a23) * (-b11+b21-b32);
+P03 := (-a21-a22) * (-b11);
+P04 := (-a13-a23) * (-b31-b32);
+P05 := (-a11-a12) * (-b21+b32);
+P06 := (-a31) * (-b12);
+P07 := (-a11-a12) * (-b22-b32);
+P08 := (-a11) * (b12-b22-b32);
+P09 := (-a11-a21-a31) * (b11+b12-b21-b22);
+P10 := (-a32) * (b22);
+P11 := (-a22+a23) * (-b11+b21);
+P12 := (-a23) * (b11-b21-b31);
+P13 := (-a21-a22-a31-a32) * (b21+b22);
+P14 := (a12-a13) * (b32);
+
+c11 := -P02+P04+P05-P12+P14;
+c12 := P07-P08-P14;
+c21 := P03-P11+P12;
+c22 := -P01+P02-P06+P08-P09+P11;
+c31 := P01-P03+P10-P13;
+c32 := P06-P10;
+
+Simplify(c11 - (a11*b11+a12*b21+a13*b31));
+Simplify(c12 - (a11*b12+a12*b22+a13*b32));
+Simplify(c21 - (a21*b11+a22*b21+a23*b31));
+Simplify(c22 - (a21*b12+a22*b22+a23*b32));
+Simplify(c31 - (a31*b11+a32*b21));
+Simplify(c32 - (a31*b12+a32*b22));
+
+#  Yacas detects no errors. OK!
+
+#  Rank of 14x14 matrix H'*H is 14
+
+#  No linear dependencies between intermediate products found
+
+#  add operations: 16
+#  sub operations: 31
+
+#
+#  end of 3x3x2 solution s3x3x2_14.solution.txt
+#

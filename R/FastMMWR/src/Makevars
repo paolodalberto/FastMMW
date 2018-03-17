@@ -1,0 +1,2 @@
+PKG_CPPFLAGS=-I/usr/include -I ../include -I /usr/share/R/include/ -I ./  -DOMP_NUM_THREADS=4 -DAPPLICATION=1 -DGOTO_BLAS  -pthread -fopenmp -O2   -msse3 -fPIC -march=opteron -mtune=opteron
+PKG_LIBS=-L../lib/ -ldfastmm -lsfastmm -lscfastmm -ldcfastmm -lpthread  -lm -lgomp -lRblas

@@ -1,0 +1,43 @@
+#
+#
+#  Abraham Waksman's commutative Algorithm for <2x2x3> with 10 products
+#  Extracted from J.M. Landberg's paper "Geometry and the coomplexity of matrix multiplication"
+#  by Axel Kemper, 30-Aug-2014
+#
+#  Reference:
+#  Abraham Waksman, On Winograd’s algorithm for inner products, 
+#  IEEE Trans. Computers C-19 (1970), no. 4, 360–361.
+#
+#  2x2 * 2x3
+#
+#             b11 b12 b13
+#             b21 b22 b23
+#  a11 a12    c11 c12 c13
+#  a21 a22    c21 c22 c23
+#
+
+P1  := 0.5 * (a11 + b21) * ( a12 + b11);
+P2  := 0.5 * (a11 + b22) * ( a12 + b12);
+P3  := 0.5 * (a11 + b23) * ( a12 + b13);
+P4  :=       (a21 + b21) * ( a22 + b11);
+P5  := 0.5 * (a21 + b22) * ( a22 + b12);
+P6  :=       (a21 + b23) * ( a22 + b13);
+P7  := 0.5 * (a11 - b21) * (-a12 + b11);
+P8  := 0.5 * (a11 - b22) * (-a12 + b12);
+P9  := 0.5 * (a11 - b23) * (-a12 + b13);
+P10 := 0.5 * (a21 - b22) * (-a22 + b12);
+
+c11 :=  P1                          + P7;
+c12 :=       P2                          + P8;
+c13 :=            P3                          + P9;
+c21 := -P1 + P2      + P4 - P5      + P7 - P8      + P10;
+c22 :=                      P5                     + P10;
+c23 :=       P2 - P3      - P5 + P6      - P8 + P9 + P10;
+
+
+Simplify(c11 - (a11*b11+a12*b21));
+Simplify(c12 - (a11*b12+a12*b22));
+Simplify(c13 - (a11*b13+a12*b23));
+Simplify(c21 - (a21*b11+a22*b21));
+Simplify(c22 - (a21*b12+a22*b22));
+Simplify(c23 - (a21*b13+a22*b23));

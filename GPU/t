@@ -1,0 +1,2 @@
+gcc -I ../ -I /ATLAS/install/include -I ..//Add -I ..//Mul -I ..//Matrices -I ..//Sort -I ..//Scaling -I ..//PThread -I ..//Error -I /opt/AMDAPPSDK-3.0/include/ -I /home/paolo/Desktop/OpenCL3/clBLAS-2.10.0-Fiji-Linux-x64-CL2.0/include -I ..//GPU example_sgemm_multigraphic_main.o  \
+-L /opt/AMDAPPSDK-3.0/lib/x86_64/ -L /home/paolo/Desktop/OpenCL3/clBLAS-2.10.0-Fiji-Linux-x64-CL2.0/lib64/ -l OpenCL -l clBLAS -pthread   -o Fiji-gemm

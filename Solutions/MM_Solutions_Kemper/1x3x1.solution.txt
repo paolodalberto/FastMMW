@@ -1,0 +1,27 @@
+#
+#  Yacas script s1x3x1.solution.txt created 17 Apr 2012 18:38:46
+#
+#  akBoole + Precosat
+#
+#  Fast matrix multiplication method for 1x3x1 matrices (=vectors).
+#
+#  intermediate products: 3
+#
+#  literal 0 from mod2: 12
+#  literal 1 from mod2: 9
+#  literal +1 from rev: 3
+#  literal -1 from rev: 6
+p1 := (-a13) * (+b31);
+p2 := (-a12) * (+b21);
+p3 := (-a11) * (+b11);
+c11 := -p1-p2-p3;
+Simplify(c11 - (a11*b11+a12*b21+a13*b31));
+
+#  Yacas detects no errors. OK!
+
+#  add operations: 0
+#  sub operations: 2
+
+#
+#  end of 1x3x1 solution s1x3x1.solution.txt
+#

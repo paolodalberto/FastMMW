@@ -1,0 +1,46 @@
+In the following, I use GotoBLAS BLAS library thus matrices are in Fortran format (column Major).
+Please, build the FastMMW library accordingly with GotoBLAS column major format.
+
+1) How to build and install the Python FastMMWP package
+
+   In the usual approach 
+   
+   Install numpy.  Please, take a look at the setup.py for further
+   information about the process. This is specific for GotoBLAS and A8
+   AMD machine.  Please redirect the appropriate include
+   directories:
+
+
+   python = "/usr/include/python2.5/"
+   numpy = "/usr/lib64/python2.5/site-packages/numpy/core/include/numpy/"
+   
+   I personally install this package using python 2.5, 2.6 and 2.7
+
+   python setup.py build; sudo python setup.py install
+
+
+2) How to run: 
+
+   First you will need to make visible the Goto's library:
+
+   For example: export LD_LIBRARY_PATH=/home/paolo/fusion/paolo/Desktop/MM/GotoBLAS2/
+
+   where ever your GotoLibrary is  
+
+   python temp.py -i 5 -s 500 -p -r 1
+
+   An example such as temp.py provide how to call the routines and how to use them.
+
+3) how to recreate the files of the package:
+
+   cd ../Script
+   python generateBasicInterface.py -c FastMMWRcode.h -p ../Python/FastMMWPCode.h -P ../Python/FastMMWPHeader.h
+
+   where FastMMWRcode.h is a C interface to use basic types to
+   transform into Matrix types used in FastMM@W library
+   
+   where FastMMWPCode.h is the actual Python Interface taking python
+   objects and transforming into basic types. 
+
+   where FastMMWPHeader.h is the package contract APIs
+

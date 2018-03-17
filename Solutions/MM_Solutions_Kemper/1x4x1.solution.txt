@@ -1,0 +1,28 @@
+#
+#  Yacas script s1x4x1.solution.txt created 17 Apr 2012 18:40:50
+#
+#  akBoole + Precosat
+#
+#  Fast matrix multiplication method for 1x4x1 matrices (=vectors).
+#
+#  intermediate products: 4
+#
+#  literal 0 from mod2: 12
+#  literal 1 from mod2: 24
+#  literal +1 from rev: 11
+#  literal -1 from rev: 13
+p1 := (-a11+a13-a14) * (-b11-b21-b31+b41);
+p2 := (-a11-a14) * (+b11+b21+b31);
+p3 := (-a11+a13) * (+b11+b21-b41);
+p4 := (-a11+a12) * (+b21);
+c11 := -p1-p2-p3+p4;
+Simplify(c11 - (a11*b11+a12*b21+a13*b31+a14*b41));
+
+#  Yacas detects no errors. OK!
+
+#  add operations: 8
+#  sub operations: 7
+
+#
+#  end of 1x4x1 solution s1x4x1.solution.txt
+#

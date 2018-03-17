@@ -1,0 +1,120 @@
+compare <- function(n,MM,type="normal") {
+
+  Col =c("red", "blue", "black", "yellow", "green","orange","gray")
+  
+  dr = vector("numeric",n)
+  dw = vector("numeric",n)
+  db = vector("numeric",n)
+  ds = vector("numeric",n)
+  sr = vector("numeric",n)
+  sw = vector("numeric",n)
+  sb = vector("numeric",n)
+  
+  
+  M = 0
+  i = 1
+  while (i<=n) {
+    as = 1.0
+    bs =1.0
+    
+    if (type =="normal")  {
+       AS = array(rnorm(MM*MM),dim=c(MM,MM))
+       BS = array(rnorm(MM*MM),dim=c(MM,MM))
+    }
+    else {
+      AS = array(runif(MM*MM,0,1),dim=c(MM,MM))
+      BS = array(runif(MM*MM,0,1),dim=c(MM,MM))
+    }
+
+    print (c(dim(AS),dim(BS)))
+
+    #CD =AS%*%BS
+
+
+    CD = d_mm_leaf_computationR(as,AS,bs,BS)
+    CS = s_mm_leaf_computationR(as,AS,bs,BS)
+    sr[i] =  max(abs(CD-CS))
+    if (sr[i]>M) { M=sr[i] }
+
+    print(sr[i])
+    
+    CS = s_wmpipeR(as,AS,bs,BS)
+    sw[i] =  max(abs(CD-CS))
+    print(sw[i])
+    if (sw[i]>M) { M=sw[i] }
+
+    CS = s_BMOWR_PIPER(as,AS,bs,BS)
+    sb[i] =  max(abs(CD-CS))
+    print(sb[i])
+    if (sb[i]>M) { M=sb[i] }
+
+    CDC = s_smpipeR(as,AS,bs,BS)
+    dw[i] = max(abs(CD-CDC))
+    if (dw[i]>M) { M=dw[i] }
+    
+    print(dw[i])
+    
+    
+    i = i +1
+  }
+
+  #L = list(dr,dw,db,ds,sr,sw,sb)
+
+  L = list(sr,sw,sb,dw)
+  l =c("Goto Float","Winograd", "B-Winograd", "Strassen")
+  i = 1
+  while (i<=length(L)) {
+    average = sum(L[[i]])/length(L[[i]])
+    var = sqrt(sum((L[[i]]-average)^2)/length(L[[i]]))
+
+    T = c(average+var,average-var,L[[i]])
+    L[[i]] = T
+    
+    print (c(i,average,var))
+    i = i + 1
+  }
+
+  plotL(L,l,Col,type,type)
+  
+  L
+}
+
+plotL <- function(L,l,Col,t,f) {
+
+
+  png(filename=f, height=512, width=728,
+      bg="white")
+  
+  i =1
+  M = 0
+  while (i<length(L)) {
+    M =max(c(M,L[[i]]))
+    i =i+1
+    
+    
+  }
+  
+  
+  X = c(0,0,1:(length(L[[1]])-2))
+  print(X)
+  print(L[[1]])
+
+  i = 1
+  plot(X,L[[i]],xlab="sample", ylab="maximum Error", main=t, type="o", col=Col[i], ylim=c(0,M),pch=22)
+  myline.fit <- lm(L[[i]] ~ X)
+  summary(myline.fit)
+  abline(myline.fit,col=Col[i]) 
+  i = 2
+  while (i<=length(L)) {
+    lines(X,L[[i]], type="o", col=Col[i], ylim=c(0,M),pch=22)
+    myline.fit <- lm(L[[i]] ~ X)
+    summary(myline.fit)
+    abline(myline.fit,col=Col[i]) 
+    i = i +1
+    
+  }
+  
+  
+  legend(x="bottomright",legend=l,col=Col,lty=5,lwd=2)
+  dev.off()
+}

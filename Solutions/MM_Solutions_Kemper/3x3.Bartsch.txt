@@ -1,0 +1,175 @@
+#	benjamin.a.bartsch@gmail.com
+#
+#   http://mathforum.org/kb/plaintext.jspa?messageID=5468654
+#
+#	Re: Laderman's algorithm for 3x3 matrix multiplication
+#	Posted: Jan 4, 2007 2:03 PM 	
+#
+#	Hello Chris,
+#
+#	I jused the linear combinations (only those) of your products you wrote
+#	and tried to calculated different corresponding bilinear products. Then I
+#	tried to optimize the additions needed by a program I wrote. The result uses
+#	for 3x3 matrix multiplication 23 multiplication and 68 additions.
+#
+#	Are you sure 66 additions is possible?
+#	If I enter n = 3 in the equation you wrote
+#	> Knuth [The Art of Computer Programming, Volume 2,
+#	> Answer to exercises Section 4.6.4 , exercice 12]
+#	> reads that Ondrej Sykora generalised this construction
+#	> to n**3 - (n-1)**2 mult (n=3 --> 23 mults) and
+#	> n**3 - n**2 + 11(n-1)**2 adds (n=3 --> 66 adds).
+#	I get 62 ... which seems extremely low to me...
+#
+#	Here is my result.
+#	The matrices are enumerated the following way
+#	X1 X2 X3   Y1 Y4 Y7   Z1 Z2 Z3
+#	X4 X5 X6 * Y2 Y5 Y8 = Z4 Z5 Z6
+#	X7 X8 X9   Y3 Y6 Y9   Z7 Z8 Z9
+#
+#	Calculating temporary X's:
+#	X10 := X1 - X4
+#	X11 := X1 - X7
+#	X12 := X3 - X6
+#	X13 := X3 - X9
+#	X14 := X2 - X5
+#	X15 := X8 + X11
+#	X16 := X8 - X13
+#	X17 := X4 + X5
+#	X18 := X5 - X6
+#	X19 := X5 - X10
+#	X20 := X5 + X12
+#	X21 := X7 - X8
+#	X22 := X8 + X9
+#	X23 := X10 + X14
+#	X24 := X12 - X14
+#	X25 := X15 + X24
+#	X26 := X16 - X23
+#
+#	Calculating temporary Y's:
+#	Y10 := Y1 - Y4
+#	Y11 := Y1 - Y7
+#	Y12 := Y3 - Y6
+#	Y13 := Y3 - Y9
+#	Y14 := Y2 - Y5
+#	Y15 := Y8 + Y11
+#	Y16 := Y8 + Y13
+#	Y17 := Y4 + Y5
+#	Y18 := Y5 + Y6
+#	Y19 := Y5 - Y10
+#	Y20 := Y5 - Y12
+#	Y21 := Y7 - Y8
+#	Y22 := Y8 - Y9
+#	Y23 := Y10 + Y14
+#	Y24 := Y12 + Y14
+#	Y25 := Y15 - Y24
+#	Y26 := Y16 - Y23
+#
+#	The Products:
+#	P1 := X25 * Y5
+#	P2 := X12 * Y18
+#	P3 := X5 * Y25
+#	P4 := X20 * Y20
+#	P5 := X18 * Y12
+#	P6 := X3 * Y3
+#	P7 := X16 * Y16
+#	P8 := X13 * Y22
+#	P9 := X22 * Y13
+#	P10 := X26 * Y8
+#	P11 := X8 * Y26
+#	P12 := X15 * Y19
+#	P13 := X11 * Y17
+#	P14 := X1 * Y1
+#	P15 := X21 * Y10
+#	P16 := X19 * Y15
+#	P17 := X10 * Y21
+#	P18 := X17 * Y11
+#	P19 := X2 * Y2
+#	P20 := X4 * Y4
+#	P21 := X6 * Y9
+#	P22 := X9 * Y6
+#	P23 := X7 * Y7
+#
+#	Calculating temporary P's:
+#	P25 := P6 + P14
+#	P26 := P2 - P4
+#	P27 := P7 + P8
+#	P28 := P12 - P13
+#	P29 := P16 - P17
+#	P30 := P1 - P4
+#	P31 := P3 - P25
+#	P32 := P5 + P6
+#	P33 := P5 + P12
+#	P34 := P6 - P9
+#	P35 := P7 - P9
+#	P36 := P10 - P16
+#	P37 := P11 - P25
+#	P38 := P14 - P15
+#	P39 := P14 - P18
+#	P40 := P15 - P25
+#	P41 := P18 - P25
+#	P42 := P19 + P25
+#	P43 := P20 - P26
+#	P44 := P21 + P29
+#	P45 := P22 + P28
+#	P46 := P23 + P27
+#	P47 := P29 - P26
+#	P48 := P27 + P28
+#	P49 := P33 - P30
+#	P50 := P47 - P31
+#	P51 := P32 + P43
+#	P52 := P34 + P46
+#	P53 := P35 - P36
+#	P54 := P48 - P37
+#	P55 := P38 + P45
+#	P56 := P39 + P44
+#	P57 := P49 - P40
+#	P58 := P53 - P41
+#
+#	The Outputs:
+#	Z1 := P42
+#	Z2 := P57
+#	Z3 := P58
+#	Z4 := P50
+#	Z5 := P51
+#	Z6 := P56
+#	Z7 := P54
+#	Z8 := P55
+#	Z9 := P52
+#
+#	USED 68 ADDITIONS
+
+P1  :=  (a32+a11-a31+a13-a23-a12+a22)*b22;
+P2  :=  (a13-a23)*(b22+b32);
+P3  :=  a22*(b23+b11-b13-b31+b32-b21+b22);
+P4  :=  (a22+a13-a23)*(b22-b31+b32);
+P5  :=  (a22-a23)*(b31-b32);
+P6  :=  a13*b31;
+P7  :=  (a32-a13+a33)*(b23+b31-b33);
+P8  :=  (a13-a33)*(b23-b33);
+P9  :=  (a32+a33)*(b31-b33);
+P10 :=  (a32-a13+a33-a11+a21-a12+a22)*b23;
+P11 :=  a32*(b23+b31-b33-b11+b12-b21+b22);
+P12 :=  (a32+a11-a31)*(b22-b11+b12);
+P13 :=  (a11-a31)*(b12+b22);
+P14 :=  a11*b11;
+P15 :=  (a31-a32)*(b11-b12);
+P16 :=  (a22-a11+a21)*(b23+b11-b13);
+P17 :=  (a11-a21)*(b13-b23);
+P18 :=  (a21+a22)*(b11-b13);
+P19 :=  a12*b21;
+P20 :=  a21*b12;
+P21 :=  a23*b33;
+P22 :=  a33*b32;
+P23 :=  a31*b13;
+
+C11 := P19+P6+P14;
+C12 := P5+P12-P1+P4-P15+P6+P14;
+C13 := P7-P9-P10+P16-P18+P6+P14;
+C21 := P16-P17-P2+P4-P3+P6+P14;
+C22 := P5+P6+P20-P2+P4;
+C23 := P14-P18+P21+P16-P17;
+C31 := P7+P8+P12-P13-P11+P6+P14;
+C32 := P14-P15+P22+P12-P13;
+C33 := P6-P9+P23+P7+P8;
+

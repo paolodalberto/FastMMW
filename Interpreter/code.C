@@ -1,0 +1,17 @@
+# example of first interpreted computation
+# define operands
+# def name: m, n, destination
+
+def A=1000,1000,1;
+def B=1000,1000,1;
+def C0=1000,1000,0;
+def C1=1000,1000,1;
+def C2=1000,1000,2;
+def C3=1000,1000,3;
+
+TIME;
+C0 += A*B;
+C1 += A*B;
+C2 += A*B;
+C3 += A*B;
+TIME;

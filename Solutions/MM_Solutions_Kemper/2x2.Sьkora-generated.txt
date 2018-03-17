@@ -1,0 +1,19 @@
+#
+#  2x2 Sýkora-A solution (generated)
+#
+
+P1 := a11*b11;
+P2 := a12*b21;
+P3 := (-a12+a22+a21) * (b21+b12-b22);
+P4 := (a22+a21) * (b22-b21);
+P5 := (a12-a22) * (b12-b22);
+P6 := (+a11+a12-a21-a22) * b12;
+P7 := a21 * (b11-b21+b22-b12);
+c11 := +P1+P2;
+c22 := P2+P3+P4+P5;
+c12 := P6+P3+P4+P2;
+c21 := P7+P3+P5+P2;
+Simplify(c11 - (+a11*b11+a12*b21));
+Simplify(c12 - (+a11*b12+a12*b22));
+Simplify(c21 - (+a21*b11+a22*b21));
+Simplify(c22 - (+a21*b12+a22*b22));

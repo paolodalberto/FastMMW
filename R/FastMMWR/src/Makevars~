@@ -1,0 +1,2 @@
+PKG_CPPFLAGS=-I/usr/include -I ../include -I /usr/share/R/include/ -I ./  -DOMP_NUM_THREADS=4   -pthread -fopenmp
+PKG_LIBS=-L../lib/ -ldfastmm -lsfastmm -lscfastmm -ldcfastmm -lRblas -lpthread  -lm -lgomp -L/home/paolo/fusion/paolo/Desktop/MM/ATLAS/install2/lib/ -latlas

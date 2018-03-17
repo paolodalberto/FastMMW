@@ -1,0 +1,45 @@
+#
+#  Yacas script s2x3x2.solution.txt created 17 Apr 2012 18:48:17
+#
+#  akBoole + Precosat
+#
+#  Fast matrix multiplication method for 2x3x2 matrices.
+#
+#  intermediate products: 15
+#
+#  literal 0 from mod2: 133
+#  literal 1 from mod2: 107
+#  literal +1 from rev: 45
+#  literal -1 from rev: 62
+p1 := (+a12+a13-a22-a23) * (-b12-b21+b22);
+p2 := (-a11-a23) * (-b21-b22+b32);
+p3 := (-a11+a22) * (-b11-b12+b22);
+p4 := (-a11+a22+a23) * (-b31);
+p5 := (-a11-a13+a22+a23) * (-b12-b21+b22+b31-b32);
+p6 := (+a11) * (+b21-b22-b31+b32);
+p7 := (-a11+a12) * (-b21);
+p8 := (-a11-a13+a22+a23) * (+b12+b21-b22+b32);
+p9 := (+a11) * (-b11-b22-b31+b32);
+p10 := (+a11+a12+a23) * (-b12-b21);
+p11 := (-a11-a12+a21+a22) * (-b12);
+p12 := (-a11+a22) * (-b11-b21+b31+b32);
+p13 := (+a22+a23) * (-b12+b22-b31);
+p14 := (+a11-a22) * (-b11+b32);
+p15 := (-a11+a21) * (+b11);
+c11 := -p4-p5+p6-p7-p8-p9;
+c12 := +p1-p2-p3-p4-p6-p8-p10+p13-p14;
+c21 := -p4+p6-p9-p12-p14+p15;
+c22 := -p2-p4-p6+p7-p10-p11+p13;
+Simplify(c11 - (a11*b11+a12*b21+a13*b31));
+Simplify(c12 - (a11*b12+a12*b22+a13*b32));
+Simplify(c21 - (a21*b11+a22*b21+a23*b31));
+Simplify(c22 - (a21*b12+a22*b22+a23*b32));
+
+#  Yacas detects no errors. OK!
+
+#  add operations: 35
+#  sub operations: 38
+
+#
+#  end of 2x3x2 solution s2x3x2.solution.txt
+#

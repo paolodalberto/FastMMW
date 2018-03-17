@@ -1,0 +1,327 @@
+#include <R.h>
+//#include <cdl.h>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
+#define GETTIME
+
+#define FASTMMWRINTERFACE_MODULE
+#define APPLICATION 1
+
+#include <FastMMWR.h>
+#include <pthread.h>
+#define _GNU_SOURCE
+#include <sched.h>
+
+//# define CPU_ZERO(cpusetp) __CPU_ZERO_S (sizeof (cpu_set_t), cpusetp)
+//# define CPU_SET(cpu, cpusetp) __CPU_SET_S (cpu, sizeof (cpu_set_t), cpusetp)
+
+static int timing=1;
+
+#define TEXECUTE(X) \
+  { if (timing) {START_CLOCK;}			\
+    X;						\
+    if (timing) {END_CLOCK;}			\
+  }
+
+void
+R_init_mylib(DllInfo *info)
+{
+  Rprintf(" FastMMW \n");
+  R_FlushConsole();
+
+}
+void
+R_unload_mylib(DllInfo *info)
+{
+  /* Release resources. */
+}
+
+static char flags[3]="ntc";
+
+
+void d_maddR(double *betac, int *transc, int *mc, int *nc, int *Mc, int *Nc, double *datac, 
+	     double *betaa, int *transa, int *ma, int *na, int *Ma, int *Na, double *dataa, 
+	     double *betab, int *transb, int *mb, int *nb, int *Mb, int *Nb, double *datab) {
+  
+
+
+
+  D_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, flags[*transc], *betac}; 
+  D_Matrix A = {  dataa, *ma, *na, *Ma, *Na, flags[*transa], *betaa}; 
+  D_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, flags[*transb], *betab}; 
+
+
+  TEXECUTE(mm_leaf_computation_madd_d(C,A,B));
+
+  
+}
+
+void d_mR(double *betac, int *transc, int *mc, int *nc, int *Mc, int *Nc, double *datac, 
+	  double *betaa, int *transa, int *ma, int *na, int *Ma, int *Na, double *dataa, 
+	  double *betab, int *transb, int *mb, int *nb, int *Mb, int *Nb, double *datab) {
+  
+
+
+
+  D_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, flags[*transc], *betac}; 
+  D_Matrix A = {  dataa, *ma, *na, *Ma, *Na, flags[*transa], *betaa}; 
+  D_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, flags[*transb], *betab}; 
+  
+  
+  TEXECUTE(mm_leaf_computation_d(C,A,B));
+
+  
+}
+void z_maddR(double complex *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double complex *datac, 
+	     double complex *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double complex *dataa, 
+	     double complex *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double complex *datab) {
+
+
+  Z_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  Z_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  Z_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+  
+  
+  TEXECUTE(mm_leaf_computation_madd_z(C,A,B));
+
+  
+}
+
+void z_mR(double complex *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double complex *datac, 
+	  double complex *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double complex *dataa, 
+	  double complex *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double complex *datab) {
+  
+
+  Z_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  Z_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  Z_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+  
+  
+  TEXECUTE(mm_leaf_computation_z(C,A,B));
+
+  
+}
+
+void  s_wmR     (float betac, char transc, int mc, int nc, int Mc, int Nc, float *datac, 
+		 float betaa, char transa, int ma, int na, int Ma, int Na, float *dataa, 
+		 float betab, char transb, int mb, int nb, int Mb, int Nb, float *datab) {
+
+  S_Matrix C = {  datac, mc, nc,Mc, Nc,betac}; 
+  S_Matrix A = {  dataa, ma, na,Ma, Na,betaa}; 
+  S_Matrix B = {  datab, mb, nb,Mb, Nb,betab}; 
+  
+  TEXECUTE(s_wm(C,A,B));
+  
+
+}
+
+
+
+
+void  Rprint(D_Matrix c) { 
+  int i,j;
+  Rprintf("b=%e-%dx%d-%c\n",(double)c.beta,c.m,c.n,c.trans);
+
+  R_FlushConsole();
+}
+
+void  RZprint(Z_Matrix c) { 
+  int i,j;
+  Rprintf("b=%dx%d-%c\n",c.m,c.n,c.trans);
+
+  R_FlushConsole();
+}
+
+
+
+static void setAffinity() { 
+
+  cpu_set_t current_mask; 
+  pthread_t  p_thread[4]; // thread's structure 
+  pthread_attr_t attr;
+  int i,k;
+
+  
+  if (sched_getaffinity(0,sizeof(current_mask),&(current_mask))<0) { 
+    Rprintf(" Failed 1 sched_getaffinity(0,sizeof(current_mask),&(current_mask))\n");
+  }
+  pthread_attr_init(&attr);
+  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+
+  Rprintf("%u mask\n",current_mask);
+  k=1;
+  // for (i=0;i<4;i++) {
+  //  k*=2;
+    CPU_SET(k, &current_mask);
+  //}
+
+  Rprintf("%u mask\n",current_mask);
+  //current_mask = (cpu_set_t) 7;
+
+
+
+  if (sched_setaffinity(0,sizeof(current_mask),&(current_mask))<0) { 
+    int p = 1;
+    Rprintf(" Failed 2 sched_setaffinity(0,sizeof(current_mask),&(current_mask))\n");
+    if (sched_setaffinity(0,sizeof(int),&(p))<0) { 
+      Rprintf(" Failed 2* sched_setaffinity(0,sizeof(p),&(p))\n");
+    } else {
+       Rprintf(" SUCC sched_setaffinity(0,sizeof(p),&(p))\n");
+    }
+  }
+
+
+  if (sched_getaffinity(0,sizeof(current_mask),&(current_mask))<0) { 
+    Rprintf(" Failed 2 sched_getaffinity(0,sizeof(current_mask),&(current_mask))\n");
+  }
+  Rprintf("%u mask\n",current_mask);
+
+
+  {
+    int p = 3;
+    if (sched_setaffinity(0,sizeof(int),&(p))<0) { 
+      Rprintf(" Failed 2* sched_setaffinity(0,sizeof(p),&(p))\n");
+    } else {
+
+      Rprintf(" SUCC sched_setaffinity(0,sizeof(p),&(p))\n");
+      if (sched_getaffinity(0,sizeof(p),&(p))<0) { 
+	Rprintf(" Failed 2 sched_getaffinity(0,sizeof(p),&(p))\n");
+      }
+      Rprintf("%d mask\n",p);
+
+
+    }
+  }
+
+
+
+
+
+
+}
+
+
+
+void  d_wmR     (double *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double *datac, 
+		 double *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double *dataa, 
+		 double *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double *datab) {
+
+
+  D_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  D_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  D_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+
+
+  TEXECUTE(d_wm(C,A,B));
+
+
+
+}
+
+void  z_wmR     (double complex *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double complex *datac, 
+		 double complex *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double complex *dataa, 
+		 double complex *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double complex *datab) {
+
+
+  Z_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  Z_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  Z_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+
+  TEXECUTE(z_wm(C,A,B));
+
+
+}
+
+void  d_wmaddR     (double *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double *datac, 
+		    double *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double *dataa, 
+		    double *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double *datab) {
+
+
+  D_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  D_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  D_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+  TEXECUTE(d_wmadd(C,A,B));
+  
+
+
+}
+
+void  z_wmaddR     (double complex *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double complex *datac, 
+		    double complex *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double complex *dataa, 
+		    double complex *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double complex *datab) {
+
+
+  Z_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  Z_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  Z_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+  
+  TEXECUTE(z_wmadd(C,A,B));
+  
+
+}
+
+void  d_wmpipeR     (double *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double *datac, 
+		     double *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double *dataa, 
+		     double *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double *datab) {
+
+
+  D_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  D_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  D_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+
+  START_CLOCK;
+  d_wmpipe(C,A,B,0);
+  END_CLOCK;  
+
+
+}
+
+void  z_wmpipeR     (double complex *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double complex *datac, 
+		     double complex *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double complex *dataa, 
+		     double complex *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double complex *datab) {
+
+
+  Z_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  Z_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  Z_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+  
+  TEXECUTE(z_wmpipe(C,A,B,0));
+  
+
+}
+
+void  d_wmaddpipeR     (double *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double *datac, 
+			double *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double *dataa, 
+			double *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double *datab) {
+
+
+  D_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  D_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  D_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+  TEXECUTE(d_wmaddpipe(C,A,B,0));
+  
+
+
+}
+
+void  z_wmaddpipeR(double complex *betac, char **transc, int *mc, int *nc, int *Mc, int *Nc, double complex *datac, 
+		   double complex *betaa, char **transa, int *ma, int *na, int *Ma, int *Na, double complex *dataa, 
+		   double complex *betab, char **transb, int *mb, int *nb, int *Mb, int *Nb, double complex *datab) {
+
+
+  Z_Matrix C = {  datac, *mc, *nc, *Mc, *Nc, transc[0][0], *betac}; 
+  Z_Matrix A = {  dataa, *ma, *na, *Ma, *Na, transa[0][0], *betaa}; 
+  Z_Matrix B = {  datab, *mb, *nb, *Mb, *Nb, transb[0][0], *betab}; 
+
+  
+  TEXECUTE(z_wmaddpipe(C,A,B,0));
+  
+
+}
