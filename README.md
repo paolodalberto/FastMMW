@@ -1,1 +1,413 @@
 # FastMMW
+Copyright 2011 Paolo D'Alberto, Marco Bodrato, and Alexandru Nicolau
+
+
+
+Here, we describe how to install the Fast Matrix Multiply library and
+how to build a few examples.
+
+
+1) WHAT IS IT ?
+
+FMM is a set of algorithms derived from the fast Strassen's and
+Winograd's matrix multiplications. The idea is to provide highly
+efficient implementations of fast MM that should be used in combination
+with highly tuned, architecture dependent, even proprietary, general
+matrix multiplication codes (GEMM).
+
+In other words, if you do not have a BLAS yet, then please download
+and install one. Then, you may install FMM. For example, we
+successfully use these algorithms using BLAS such as ATLAS, GotoBLAS,
+SGI BLAS, MKL and others; however, you may have other implementation
+of ideas of implementations. This is one of the reasons why we decided
+to use the LGPL license: there is clearly a dependence on GEMM
+implementation and everybody should be free to use the one the like
+freely.
+
+2) WHAT IF I USE A PROPRIETARY BLAS ?
+
+Once you have a BLAS, GEMM will have is specific interface. We mask
+the GEMM interface in a single file: 
+
+Matrices/architecture.h
+
+Please, consider that there is a difference if you build a library or
+a single application (where you will use a single version of GEMM such
+as DGEMM). For a library, you may need to use different *GEMM. 
+
+The BLAS GEMM has a standard interface, in the above file you will
+have two examples of interface ATLAS and GotoBLAS. You may take these
+as template and adapt you code.
+
+Please, a last note about column or row major: The user may specify how to
+store the matices. By default we choose the column major format,
+becuase this is the common format for the implementation of BLAS in
+Python/R and other high performance code. 
+
+In fact, you can take a look and the include file Matrices/mat_operands.h
+and we set the #define COLUMN_MAJOR 1 
+If you would like to use ROW MAJOR just remove the comment on the line below 
+//#define ROW_MAJOR 1
+
+Persoanlly, I used both but in case you use the R/Python packages the
+default column major is reccomended. 
+
+From here on, we assume that you have installed your BLAS GEMM and it
+is tuned for this architecture.
+
+
+3) LET ME BUILD THE FMM LIBRARY
+
+There is no "MAKE BUILD" because the following steps are architecture
+dependent and also user dependent: you may want to have control on the
+installation process and the tuning process. The process is simple and
+it will take 20 minutes if you know this library and the architecture.
+
+3.0) Set the home variable D in the Makefile. 
+
+This is the home directory where the package will be built and
+relative to this you will set the variable for ATLAS, GotoBLAS and
+MKL. You may select the optimization flags for this systems as
+well. And you should.
+
+In this INSTALL we will discuss the installation for ATLAS/GotoBLAS
+because they are free and they can be installed to most architectures.
+
+
+
+We need to create matrix additions (MA), we use these MA to explore
+the system and estimate the recursion point (when our algorithms will
+yield to you BLAS GEMM implementation) and finally to tune the library
+for each problem types: single and double precision and single/double
+complex precisions.
+
+
+3.1) Matrix Addition: We have a very simple C code generator for
+matrix addition kernels.
+
+
+cd MAT-ADD-Generator/
+gcc addgen.c -o addgen
+cd ../
+
+addgen will be used in the installation process and, basically, we
+create MA kernels: register allocation, instruction scheduling and
+loop unrolling. For example, if you run  
+
+MAT-ADD-Generator/addgen 32
+
+This create an include file with macros and function definitions. The
+number 32 is basically the unrolling factor of the MA inner
+loop. Different architectures will require different unrolling factor
+as a function of the matrix precision (float or double) and format
+(real or complex).
+
+
+3.2) Matrix Tuning and Start checking the recursion point. 
+
+Tuning the MA means to find the right loop unrolling for the inner
+loop, the right thread allocation to processors (if the MA is
+parallel) and see what is the total effect w.r.t. to algorithms such
+as Strassen's. Of course, this is a function of the matrix elements
+(precisions or types).
+
+3.2.1) TYPES 
+First, choose the type of the computation: in the Makefile look for
+this section of the code:
+
+
+########################################################################################
+########################################################################################
+
+# for the analysis and testing of each examples
+#
+# Define the MACROS 
+#MACROS = -DSINGLE_PRECISION 
+#MACROS = -DDOUBLE_PRECISION 
+#MACROS = -DSINGLE_COMPLEX
+MACROS = -DDOUBLE_COMPLEX
+
+#TYPE=Single
+#TYPE=Double
+#TYPE=SComplex
+TYPE=DComplex
+
+
+In this case, you are selecting the type double complex for he macros
+and the types. That is a matrix will be composed of double precision
+complex elements and thus all the methods will have double complex
+matrices. If you want to use single precision un-comment the
+appropriate line. 
+
+3.2.2) THREADS AND THEIR ALLOCATION.  
+
+Choose the process distribution to processors for the parallel
+computing of matrix addition:
+
+find the file: 
+
+PThread/pt.h
+
+These definitions are for a 2-processor 2-core AMD system: 
+
+#define NUM_THREADS 4
+#define NUM_CORES 4
+
+static int _P[NUM_CORES]   = {1,2,4,8};
+static int _A[NUM_THREADS]   = {8,4,2,1};
+static int _T[NUM_THREADS] = {1,2,4,8};
+
+
+There are 4 cores with id 1, 2, 4, and 8. 
+You may have more threads than cores. 
+
+The Vector _P could be used to identify the core.
+The vector _A is used during the matrix multiplications to associate single threaded MA to cores.
+The vector _T is used to split matrix computations into threads: for example parallel MA.
+
+Please, note that we use the natural mapping 2^k to identify by a
+single bit a core but this may change in the future.
+
+
+3.2.3) UNROLLING and MA-GEMM testing
+
+Assume that we are working with this setting in the makefile:
+
+MACROS = -DDOUBLE_COMPLEX
+TYPE=DComplex
+UNROLL=16
+
+we are going to create the first executable to run 
+
+make clean add-gen ex3
+
+That is, we clean up the library, we create the MAs with unrolling 16,
+and then we create an executable that is called ex3_g 
+
+(Executable/DComplex/ex3_g)
+
+The default library is GotoBLAS and thus we add it in the path:
+
+export LD_LIBRARY_PATH=/home/paolo/Winograd/GotoBLAS2
+
+Let's us run the application:
+
+>  echo "0 0 1 1 1 3000 3000 3000 3000" | Executable/DComplex/ex3_g 
+
+This is the possible output 
+
+A [n/t/c]
+0  A[n]
+B [n/t/c]
+0  B[n]
+Beta A 
+B[1.000000e+00+i0.000000e+00]
+Beta B 
+Beta C 
+B[1.000000e+00+i0.000000e+00]
+B[1.000000e+00+i0.000000e+00]
+ <a.m,a.n,b.m,b.n> ?
+ size of the matrix element 16
+ You selected the following problem 
+      A 3000 x 3000 
+      B 3000 x 3000 
+ Thus C 3000 x 3000 
+Creation ...
+Initialization ...
+A - 
+B - 
+C - 
+T - 
+Addition ... 
+b1.000000e+00-3000x3000-n
+b1.000000e+00-3000x3000-n
+b1.000000e+00-3000x3000-n
+----------> get time 1.982180e-01 sec<------
+ average 0.099109
+----------> get time 3.966640e-01 sec<------
+ average 0.099166
+----------> get time 7.884380e-01 sec<------
+ average 0.098555
+----------> get time 1.573731e+00 sec<------
+ average 0.098358
+----------> get time 3.155116e+00 sec<------
+ average 0.098597
+----------> get time 6.307833e+00 sec<------
+ average 0.098560
+----------> get time 1.259284e+01 sec<------
+ average 0.098382
+ Time 9.838153e-02 
+ ADD OPS 9.000000e+06
+ ADD MFLOPS 9.148058e+01
+----------> get time 4.567230e-01 sec<------
+ average 0.228361
+----------> get time 9.134660e-01 sec<------
+ average 0.228367
+----------> get time 1.830404e+00 sec<------
+ average 0.228800
+----------> get time 3.661038e+00 sec<------
+ average 0.228815
+----------> get time 7.322497e+00 sec<------
+ average 0.228828
+----------> get time 1.464539e+01 sec<------
+ average 0.228834
+ Time 2.288343e-01 
+ ADD OPS 9.000000e+06
+ ADD MFLOPS 3.932977e+01
+
+ MUL ... 
+----------> get time 1.454730e+01 sec<------
+ average 14.547296
+ Time Cold 1.454730e+01 
+ MUL OPS 5.400000e+10
+ GOTOS OPS 5.400000e+10 MFLOPS COLD 3.712030e+03
+----------> get time 2.896461e+01 sec<------
+ average 14.482307 times 2 
+----------> get time 5.793080e+01 sec<------
+ average 14.482699 times 4 
+ Time HOT 1.448270e+01 
+ MUL OPS 5.400000e+10
+ GOTOS OPS 5.400000e+10 MFLOPS HOT  3.728587e+03
+22*pi/alpha = 8.966811e+02
+
+
+The execution is divided into four parts: 
+
+The measure of the Parallel MA, sequential MA, GotoBLAS ZGEMM, and the
+estimate of the recursion point.
+ 
+
+With an unrolling of 16, Parallel MA 91 MFLOPS, Sequential MA 39
+MFLOPS, ZGEMM 3.7 GFLOPS, the suggested recursion point is 22*pi/alpha
+= 8.966811e+02 ~ 900
+
+We must adjust the unrolling factor so that to achieve the fastest
+parallel MA (and possibly sequential MA) and thus the lowest recursion
+point.
+
+
+3.2.4) Testing and tuning the recursion point
+
+Take the recursion point achieved before 
+
+and open the file 
+
+Mul/mat-mulkernels.h
+
+find this definition:
+
+#if(DOUBLE_COMPLEX)
+#define LEAF 1500
+#endif
+
+and exchange the LEAF to the value of your recursion point say 900
+
+then let's build Goto's and Strassen
+
+make clean gotos3 strassen3
+
+let's execute Goto's first:
+> echo "0 0 1 1 1 1000 1000 1000 1000" | Executable/DComplex/gotos 
+
+ ....
+
+---------> get time 7.053919e+01 sec<------
+ average 0.551087 times 128 
+ Time HOT 5.510874e-01 
+ MUL OPS 2.000000e+09
+ GOTOS OPS 2.000000e+09 MFLOPS HOT  3.629188e+03
+
+
+Then Strassen's 
+
+>  echo "0 0 1 1 1 1000 1000 1000 1000" | Executable/DComplex/strassen 
+..
+average 0.620977 times 128 
+ Time HOT 6.209767e-01 
+ MUL OPS 2.000000e+09
+ STRASSEN OPS 2.000000e+09 MFLOPS HOT  3.220733e+03
+
+
+As you can see, Strassen's is slower than Goto's and we should check for a larger size (recursion point) 
+
+If we use the fastest of the algorithms: 
+
+> make marco_pipe_2
+
+> echo "0 0 1 1 1 1000 1000 1000 1000" | Executable/DComplex/marco_pipe_2 
+ average 0.559441 times 128 
+ Time HOT 5.594414e-01 
+ MUL OPS 2.000000e+09
+ MARCO_PIPE_PREVIOUS OPS 2.000000e+09 MFLOPS HOT  3.574995e+03
+
+
+Thus our recursion point should be adjusted accordingly (higher). 
+For this architecture, it is about at 1500 for strassen and 1200 for the fastest algorithm.
+
+I usually, take as reference the winograd algorithm and find the
+recursion point for it: 
+
+> make winograd3 
+
+Once the recursion point is found, 
+
+Set it once for all algorithms: 
+
+Mul/mat-mulkernels.h
+
+find this definition:
+
+#if(DOUBLE_COMPLEX)
+#define LEAF 1500
+#endif
+
+
+
+3.3) Now the whole library:
+
+For each type you have found the unrolling and the recursion
+point. These are different for the types. How to build now the library
+and then the applications:
+
+
+> make lib-goto
+
+this will create 4 libraries in lib/
+
+> ls lib/
+
+libdcfastmm.a  libdfastmm.a  libscfastmm.a  libsfastmm.a
+
+libdc = library double complex
+libd  = library double
+libsc = library single complex
+libs  = library single 
+
+To see an example how to use the libraries, and thus use all
+algorithms in a single application see the example:
+Example/example.mix.error.c and how to make it 
+
+
+> make mixed-error
+
+------------------------------------------------------------------------------------------------------
+
+
+Notes: by installing a fresh by using the automatic/pyhton scripts from scratch.
+
+Check point 3.0) and the variable for the make file 
+
+
+python  ./Scripts/probeandinstall.py -b GotoBLAS  -c Scripts/configurationgoto.py
+python  ./Scripts/probeandinstall.py -b ATLAS  -c Scripts/configurationatlas.py
+
+please, delete the file Scripts/configurationgoto.py and
+Scripts/configurationatlas.py if they are not empty. Otherwise, the
+script will create libraries and application based on previous
+configurations that may not fit your requirements.
+
+These have been tested on two different systems and different Linux
+versions. They may not provide the best solutions but this approach
+provide a framework to build libraries and applications without
+knowing to many details.
+ 
