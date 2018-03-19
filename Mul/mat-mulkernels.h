@@ -182,6 +182,48 @@ double duration;
 
 #if(LIBRARY_PACKAGE)
 
+#if(HALF_PRECISION )
+#define mul             h_mul            
+#define madd            h_madd            
+#define saddmul         h_saddmul        
+#define smul            h_smul            
+#define saddmulR         h_saddmulR        
+#define smulR            h_smulR            
+#define wmul            h_wmul           
+#define waddmul         h_waddmul        
+#define wm              h_wm             
+#define wmadd           h_wmadd          
+#define wmR             h_wmR             
+#define wmaddR          h_wmaddR          
+#define wmTR             h_wmTR             
+#define wmaddTR          h_wmaddTR          
+#define adaptive_smul   h_adaptive_smul  
+#define omul            h_omul           
+#define oaddmul         h_oaddmul        
+#define owmul           h_owmul          
+#define owaddmul        h_owaddmul       
+#define bm              h_bm             
+#define bmadd           h_bmadd          
+#define ptaddmul        h_ptaddmul       
+#define wmpipe          h_wmpipe         
+#define wmaddpipe       h_wmaddpipe      
+#define bmpipe          h_bmpipe         
+#define bmaddpipe       h_bmaddpipe      
+#define smpipe          h_smpipe         
+#define smaddpipe       h_smaddpipe      
+#define Rmul            h_Rmul           
+#define rmul            h_rmul           
+#define adaptive_wm     h_adaptive_wm           
+#define mulpt           h_mulpt
+#define BMOWR_PIPE      h_BMOWR_PIPE
+#define BMOWR	  	h_BMOWR	  
+#define BMOWRR	  	h_BMOWRR	  
+#define BMADD_PIPE	h_BMADD_PIPE
+#define BMADD     	h_BMADD     
+#define BMADDR     	h_BMADDR     
+
+
+#endif
 #if(SINGLE_PRECISION )
 #define mul             s_mul            
 #define madd            s_madd            
@@ -351,9 +393,9 @@ double duration;
 
 #ifndef MODULO_MAT_MUL
 
-void mul            (DEF(c), DEF(a), DEF(b));
-void mulpt          (DEF(c), DEF(a), DEF(b));
-void madd           (DEF(c), DEF(a), DEF(b));
+int mul            (DEF(c), DEF(a), DEF(b));
+int mulpt          (DEF(c), DEF(a), DEF(b));
+int madd           (DEF(c), DEF(a), DEF(b));
 int  saddmul        (DEF(c), DEF(a), DEF(b));
 int  smul           (DEF(c), DEF(a), DEF(b));
 int  saddmulR        (DEF(c), DEF(a), DEF(b));
@@ -367,13 +409,13 @@ int  wmaddR          (DEF(c), DEF(a), DEF(b));
 int  wmTR             (DEF(c), DEF(a), DEF(b));
 int  wmaddTR          (DEF(c), DEF(a), DEF(b));
 int  adaptive_smul  (DEF(c), DEF(a), DEF(b), int leaf);
-void omul           (DEF(c), DEF(a), DEF(b));
-void oaddmul        (DEF(c), DEF(a), DEF(b));
-void owmul          (DEF(c), DEF(a), DEF(b));
-void owaddmul       (DEF(c), DEF(a), DEF(b));
+int omul           (DEF(c), DEF(a), DEF(b));
+int oaddmul        (DEF(c), DEF(a), DEF(b));
+int owmul          (DEF(c), DEF(a), DEF(b));
+int owaddmul       (DEF(c), DEF(a), DEF(b));
 int  bm             (DEF(c), DEF(a), DEF(b));
 int  bmadd          (DEF(c), DEF(a), DEF(b));
-void ptaddmul       (DEF(c), DEF(a), DEF(b));
+int ptaddmul       (DEF(c), DEF(a), DEF(b));
 int  wmpipe         (DEF(c), DEF(a), DEF(b),TAddOperands *args); 
 int  wmaddpipe      (DEF(c), DEF(a), DEF(b),TAddOperands *args);
 int  bmpipe         (DEF(c), DEF(a), DEF(b),TAddOperands *args); 
@@ -382,7 +424,7 @@ int  smpipe         (DEF(c), DEF(a), DEF(b),TAddOperands *args);
 int  smaddpipe      (DEF(c), DEF(a), DEF(b),TAddOperands *args);
 int  Rmul           (DEF(c), DEF(a), DEF(b));
 int  adaptive_wm    (DEF(c), DEF(a), DEF(b), int alpha_pi);
-void mulpt          (DEF(c), DEF(a), DEF(b));
+int mulpt          (DEF(c), DEF(a), DEF(b));
 int BMADD_PIPE(DEF(c), DEF(a), DEF(b),TAddOperands *args);
 int BMADD(DEF(c), DEF(a), DEF(b));
 int BMADDR(DEF(c), DEF(a), DEF(b));
@@ -394,9 +436,52 @@ int BMOWRR(DEF(c), DEF(a), DEF(b));
 
 #elif(APPLICATION)
 
-void s_mul            (DEF_S(c), DEF_S(a), DEF_S(b));
-void s_mulpt          (DEF_S(c), DEF_S(a), DEF_S(b));
-void s_madd           (DEF_S(c), DEF_S(a), DEF_S(b));
+int h_mul            (DEF_H(c), DEF_H(a), DEF_H(b));
+int h_mulpt          (DEF_H(c), DEF_H(a), DEF_H(b));
+int h_madd           (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_saddmul        (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_smul           (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_saddmulR        (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_smulR           (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmul           (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_waddmul        (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wm             (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmadd          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmR             (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmaddR          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmTR             (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmaddTR          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_adaptive_smul  (DEF_H(c), DEF_H(a), DEF_H(b), int leaf);
+int h_omul           (DEF_H(c), DEF_H(a), DEF_H(b));
+int h_oaddmul        (DEF_H(c), DEF_H(a), DEF_H(b));
+int h_owmul          (DEF_H(c), DEF_H(a), DEF_H(b));
+int h_owaddmul       (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_bm             (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_bmadd          (DEF_H(c), DEF_H(a), DEF_H(b));
+int h_ptaddmul       (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_wmpipe         (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args); 
+int  h_wmaddpipe      (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args);
+int  h_bmpipe         (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args); 
+int  h_bmaddpipe      (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args);
+int  h_smpipe         (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args); 
+int  h_smaddpipe      (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args);
+int  h_Rmul           (DEF_H(c), DEF_H(a), DEF_H(b));
+//int  h_rmul           (DEF_H(c), DEF_H(a), DEF_H(b), H_MatrixComputations leaf);
+int  h_adaptive_wm    (DEF_H(c), DEF_H(a), DEF_H(b), int alpha_pi);
+int h_mulpt          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_BMADD_PIPE     (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args);
+int  h_BMADD          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_BMADDR          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_BMOWR_PIPE     (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args);
+int  h_BMOWR          (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_BMOWRR         (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_gpuGEMM        (DEF_H(c), DEF_s(a), DEF_H(b));
+
+
+
+int s_mul            (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_mulpt          (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_madd           (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_saddmul        (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_smul           (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_saddmulR        (DEF_S(c), DEF_S(a), DEF_S(b));
@@ -410,13 +495,13 @@ int  s_wmaddR          (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_wmTR             (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_wmaddTR          (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_adaptive_smul  (DEF_S(c), DEF_S(a), DEF_S(b), int leaf);
-void s_omul           (DEF_S(c), DEF_S(a), DEF_S(b));
-void s_oaddmul        (DEF_S(c), DEF_S(a), DEF_S(b));
-void s_owmul          (DEF_S(c), DEF_S(a), DEF_S(b));
-void s_owaddmul       (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_omul           (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_oaddmul        (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_owmul          (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_owaddmul       (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_bm             (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_bmadd          (DEF_S(c), DEF_S(a), DEF_S(b));
-void s_ptaddmul       (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_ptaddmul       (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_wmpipe         (DEF_S(c), DEF_S(a), DEF_S(b),TAddOperands *args); 
 int  s_wmaddpipe      (DEF_S(c), DEF_S(a), DEF_S(b),TAddOperands *args);
 int  s_bmpipe         (DEF_S(c), DEF_S(a), DEF_S(b),TAddOperands *args); 
@@ -426,7 +511,7 @@ int  s_smaddpipe      (DEF_S(c), DEF_S(a), DEF_S(b),TAddOperands *args);
 int  s_Rmul           (DEF_S(c), DEF_S(a), DEF_S(b));
 //int  s_rmul           (DEF_S(c), DEF_S(a), DEF_S(b), S_MatrixComputations leaf);
 int  s_adaptive_wm    (DEF_S(c), DEF_S(a), DEF_S(b), int alpha_pi);
-void s_mulpt          (DEF_S(c), DEF_S(a), DEF_S(b));
+int s_mulpt          (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_BMADD_PIPE     (DEF_S(c), DEF_S(a), DEF_S(b),TAddOperands *args);
 int  s_BMADD          (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_BMADDR          (DEF_S(c), DEF_S(a), DEF_S(b));
@@ -436,9 +521,9 @@ int  s_BMOWRR         (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_gpuGEMM        (DEF_S(c), DEF_s(a), DEF_S(b));
 
 
-void d_mul            (DEF_D(c), DEF_D(a), DEF_D(b));
-void d_mulpt          (DEF_D(c), DEF_D(a), DEF_D(b));
-void d_madd           (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_mul            (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_mulpt          (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_madd           (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_saddmul        (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_smul           (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_saddmulR        (DEF_D(c), DEF_D(a), DEF_D(b));
@@ -452,13 +537,13 @@ int  d_wmaddR          (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_wmTR             (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_wmaddTR          (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_adaptive_smul  (DEF_D(c), DEF_D(a), DEF_D(b), int leaf);
-void d_omul           (DEF_D(c), DEF_D(a), DEF_D(b));
-void d_oaddmul        (DEF_D(c), DEF_D(a), DEF_D(b));
-void d_owmul          (DEF_D(c), DEF_D(a), DEF_D(b));
-void d_owaddmul       (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_omul           (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_oaddmul        (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_owmul          (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_owaddmul       (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_bm             (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_bmadd          (DEF_D(c), DEF_D(a), DEF_D(b));
-void d_ptaddmul       (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_ptaddmul       (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_wmpipe         (DEF_D(c), DEF_D(a), DEF_D(b),TAddOperands *args); 
 int  d_wmaddpipe      (DEF_D(c), DEF_D(a), DEF_D(b),TAddOperands *args);
 int  d_bmpipe         (DEF_D(c), DEF_D(a), DEF_D(b),TAddOperands *args); 
@@ -468,7 +553,7 @@ int  d_smaddpipe      (DEF_D(c), DEF_D(a), DEF_D(b),TAddOperands *args);
 int  d_Rmul           (DEF_D(c), DEF_D(a), DEF_D(b));
 //int  d_rmul           (DEF_D(c), DEF_D(a), DEF_D(b), D_MatrixComputations leaf);
 int  d_adaptive_wm    (DEF_D(c), DEF_D(a), DEF_D(b), int alpha_pi);
-void d_mulpt          (DEF_D(c), DEF_D(a), DEF_D(b));
+int d_mulpt          (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_BMADD_PIPE     (DEF_D(c), DEF_D(a), DEF_D(b),TAddOperands *args);
 int  d_BMADD          (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_BMADDR          (DEF_D(c), DEF_D(a), DEF_D(b));
@@ -478,9 +563,9 @@ int  d_BMOWRR         (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_gpuGEMMD       (DEF_D(c), DEF_D(a), DEF_D(b));
 
 
-void c_mul            (DEF_C(c), DEF_C(a), DEF_C(b));
-void c_mulpt          (DEF_C(c), DEF_C(a), DEF_C(b));
-void c_madd           (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_mul            (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_mulpt          (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_madd           (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_saddmul        (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_smul           (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_saddmulR        (DEF_C(c), DEF_C(a), DEF_C(b));
@@ -494,13 +579,13 @@ int  c_wmaddR          (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_wmTR             (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_wmaddTR          (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_adaptive_smul  (DEF_C(c), DEF_C(a), DEF_C(b), int leaf);
-void c_omul           (DEF_C(c), DEF_C(a), DEF_C(b));
-void c_oaddmul        (DEF_C(c), DEF_C(a), DEF_C(b));
-void c_owmul          (DEF_C(c), DEF_C(a), DEF_C(b));
-void c_owaddmul       (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_omul           (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_oaddmul        (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_owmul          (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_owaddmul       (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_bm             (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_bmadd          (DEF_C(c), DEF_C(a), DEF_C(b));
-void c_ptaddmul       (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_ptaddmul       (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_wmpipe         (DEF_C(c), DEF_C(a), DEF_C(b),TAddOperands *args); 
 int  c_wmaddpipe      (DEF_C(c), DEF_C(a), DEF_C(b),TAddOperands *args);
 int  c_bmpipe         (DEF_C(c), DEF_C(a), DEF_C(b),TAddOperands *args); 
@@ -510,7 +595,7 @@ int  c_smaddpipe      (DEF_C(c), DEF_C(a), DEF_C(b),TAddOperands *args);
 int  c_Rmul           (DEF_C(c), DEF_C(a), DEF_C(b));
 //int  c_rmul           (DEF_C(c), DEF_C(a), DEF_C(b), C_MatrixComputations leaf);
 int  c_adaptive_wm    (DEF_C(c), DEF_C(a), DEF_C(b), int alpha_pi);
-void c_mulpt            (DEF_C(c), DEF_C(a), DEF_C(b));
+int c_mulpt            (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_BMADD_PIPE     (DEF_C(c), DEF_C(a), DEF_C(b),TAddOperands *args);
 int  c_BMADD          (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_BMADDR          (DEF_C(c), DEF_C(a), DEF_C(b));
@@ -520,9 +605,9 @@ int  c_BMOWRR          (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_gpuGEMMC       (DEF_C(c), DEF_C(a), DEF_C(b));
 
 
-void z_mul            (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-void z_mulpt          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-void z_madd           (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_mul            (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_mulpt          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_madd           (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_saddmul        (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_smul           (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_saddmulR        (DEF_Z(c), DEF_Z(a), DEF_Z(b));
@@ -536,13 +621,13 @@ int  z_wmaddR          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_wmTR             (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_wmaddTR          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_adaptive_smul  (DEF_Z(c), DEF_Z(a), DEF_Z(b), int leaf);
-void z_omul           (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-void z_oaddmul        (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-void z_owmul          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-void z_owaddmul       (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_omul           (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_oaddmul        (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_owmul          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_owaddmul       (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_bm             (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_bmadd          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-void z_ptaddmul       (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_ptaddmul       (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_wmpipe         (DEF_Z(c), DEF_Z(a), DEF_Z(b),TAddOperands *args); 
 int  z_wmaddpipe      (DEF_Z(c), DEF_Z(a), DEF_Z(b),TAddOperands *args);
 int  z_bmpipe         (DEF_Z(c), DEF_Z(a), DEF_Z(b),TAddOperands *args); 
@@ -552,7 +637,7 @@ int  z_smaddpipe      (DEF_Z(c), DEF_Z(a), DEF_Z(b),TAddOperands *args);
 int  z_Rmul           (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 //int  z_rmul           (DEF_Z(c), DEF_Z(a), DEF_Z(b), Z_MatrixComputations leaf);
 int  z_adaptive_wm    (DEF_Z(c), DEF_Z(a), DEF_Z(b), int alpha_pi);
-void z_mulpt          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
+int z_mulpt          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_BMADD_PIPE     (DEF_Z(c), DEF_Z(a), DEF_Z(b),TAddOperands *args);
 int  z_BMADD          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_BMADDR          (DEF_Z(c), DEF_Z(a), DEF_Z(b));

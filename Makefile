@@ -12,7 +12,7 @@
 # Code root directory 
 D = $(PWD)/../
 #D = $(HOME)/Winograd
-HOMEDIR= $(D)/fmm
+HOMEDIR= $(D)/FastMMW
 
 # ATLAS location 
 #ATLAS= $(D)/ATLAS_3_9_9/build/
@@ -34,7 +34,7 @@ AR = ar rcs
 
 ## Machine Specific optimizations 
 #OPT =   $(EXTRA) $(MACROS)   -g  #-std=gnu99 -fPIC -O2  -Wall -msse3       # -m64
-OPT =   $(EXTRA) $(MACROS)  -g -Wall -O1 # -msse2 -msse4 -m64 # -mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #-fPIC     # -m64
+OPT =   $(EXTRA) $(MACROS)  -O2 -msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #-fPIC     # -m64
 
 #ARCHITECTUREGPU=/usr/local
 #ARC=Fiji

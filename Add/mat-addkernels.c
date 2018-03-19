@@ -20,7 +20,7 @@
 
 */
 
-#define MODULE_MATKERNEL 1
+#define MAT_ADD_MODULE 	 1
 #include <mat-operands.h>
 #include <mat-addkernels.h>
 #include <stdio.h>
@@ -38,7 +38,7 @@ static int debug=0;
 #define ASSIGNC(X,a,b) {			\
     X = (a)+  (b)*I;				\
   }						
-
+ 
 
 
 void randomInitialization(DEF(a), int seed1, int seed2) { 
@@ -140,7 +140,7 @@ void  copy(DEF(c),DEF(a)) {
 }
 
 
-void copy_matrix(DEF(c),DEF(a),DEF(b)) { 
+int copy_matrix(DEF(c),DEF(a),DEF(b)) { 
 
   if (a.data!=0) { 
     copy(USE(c),USE(a));
@@ -148,7 +148,7 @@ void copy_matrix(DEF(c),DEF(a),DEF(b)) {
   else if (b.data!=0)  { 
     copy(USE(c),USE(b));
   } 
-
+  return 0;
 }
 
 
@@ -230,7 +230,7 @@ void  print(DEF(c)) {
 #ifdef ROW_MAJOR
 
 // C = A + B 
-void add_t(DEF(c), DEF(a), DEF(b)) { 
+int add_t(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -253,9 +253,10 @@ void add_t(DEF(c), DEF(a), DEF(b)) {
      for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N);
    }
    //   c.beta = 1;
+   return 0;
 }
 // C = A - B 
-void sub_t(DEF(c), DEF(a), DEF(b)) { 
+int sub_t(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -279,9 +280,10 @@ void sub_t(DEF(c), DEF(a), DEF(b)) {
        
      }
    //c.beta = 1;
+   return 0;
 }
 // C = A + B 
-void add(DEF(c), DEF(a), DEF(b)) { 
+int add(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -302,9 +304,10 @@ void add(DEF(c), DEF(a), DEF(b)) {
    if (x<b.m)  {/* B is taller than A */
      for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N);
    }
+   return 0;
 }
 // C = A - B 
-void sub(DEF(c), DEF(a), DEF(b)) { 
+int sub(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -327,6 +330,7 @@ void sub(DEF(c), DEF(a), DEF(b)) {
        for (j=0;j<b.n;j++)    E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); 
        
      }
+   return 0;
 }
 
 
@@ -340,7 +344,7 @@ void sub(DEF(c), DEF(a), DEF(b)) {
  * operands before hand.
  */
 
-void add_amd(DEF(c), DEF(a), DEF(b)) { 
+int add_amd(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
   DEFREGISTERS;
@@ -368,9 +372,10 @@ void add_amd(DEF(c), DEF(a), DEF(b)) {
     for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N); 
   
   
-  
+  return 0;
+
 }
-void sub_amd(DEF(c), DEF(a), DEF(b)) { 
+int sub_amd(DEF(c), DEF(a), DEF(b)) { 
   
   int i,j,x,y;
   DEFREGISTERS;
@@ -395,9 +400,10 @@ void sub_amd(DEF(c), DEF(a), DEF(b)) {
   if (x<b.m)  /* B is taller than A */
     for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N)  = -E_(b.data,i,j,b.M,b.N); 
   
-  
+  return 0;
+
 }
-void add_amd_t(DEF(c), DEF(a), DEF(b)) { 
+int add_amd_t(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
   DEFREGISTERS;
@@ -425,9 +431,10 @@ void add_amd_t(DEF(c), DEF(a), DEF(b)) {
   
   //c.beta = 1;
   
-  
+  return 0;
+     
 }
-void sub_amd_t(DEF(c), DEF(a), DEF(b)) { 
+int sub_amd_t(DEF(c), DEF(a), DEF(b)) { 
   
   int i,j,x,y;
   DEFREGISTERS;
@@ -452,7 +459,8 @@ void sub_amd_t(DEF(c), DEF(a), DEF(b)) {
     for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N)  = -b.beta*E_(b.data,i,j,b.M,b.N); 
   
   //c.beta = 1;
-  
+  return 0;
+
 }
 
 #endif
@@ -462,7 +470,7 @@ void sub_amd_t(DEF(c), DEF(a), DEF(b)) {
 #ifdef COLUMN_MAJOR
 
 // C = A + B 
-void add(DEF(c), DEF(a), DEF(b)) { 
+int add(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -484,9 +492,10 @@ void add(DEF(c), DEF(a), DEF(b)) {
    // last column
    if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
    else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+   return 0;
 }
 // C = A - B 
-void sub(DEF(c), DEF(a), DEF(b)) { 
+int sub(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -507,10 +516,11 @@ void sub(DEF(c), DEF(a), DEF(b)) {
    // last column
    if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
    else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+   return 0;
 }
 
 // C = A + B 
-void add_t(DEF(c), DEF(a), DEF(b)) { 
+int add_t(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
   
@@ -534,9 +544,10 @@ void add_t(DEF(c), DEF(a), DEF(b)) {
    else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
    
    //c.beta = 1;
+   return 0;
 }
 // C = A - B 
-void sub_t(DEF(c), DEF(a), DEF(b)) { 
+int sub_t(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
 
@@ -559,6 +570,7 @@ void sub_t(DEF(c), DEF(a), DEF(b)) {
    else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
  
    //c.beta = 1;
+   return 0;
 }
 
 
@@ -569,7 +581,7 @@ void sub_t(DEF(c), DEF(a), DEF(b)) {
  * operands before hand.
  */
 
-void add_amd(DEF(c), DEF(a), DEF(b)) { 
+int add_amd(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
   DEFREGISTERS;
@@ -596,9 +608,10 @@ void add_amd(DEF(c), DEF(a), DEF(b)) {
     for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N); 
   
   
-  
+  return 0;
+     
 }
-void sub_amd(DEF(c), DEF(a), DEF(b)) { 
+int sub_amd(DEF(c), DEF(a), DEF(b)) { 
   
   int i,j,x,y;
   DEFREGISTERS;
@@ -620,9 +633,10 @@ void sub_amd(DEF(c), DEF(a), DEF(b)) {
     for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
   if (y<b.n)  /* B is larger than A */
     for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); 
-  
+  return 0;
+
 }
-void add_amd_t(DEF(c), DEF(a), DEF(b)) { 
+int add_amd_t(DEF(c), DEF(a), DEF(b)) { 
 
   int i,j,x,y;
   DEFREGISTERS;
@@ -649,9 +663,10 @@ void add_amd_t(DEF(c), DEF(a), DEF(b)) {
     for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); 
   
   //c.beta = 1;  
-  
+  return 0;
+
 }
-void sub_amd_t(DEF(c), DEF(a), DEF(b)) { 
+int sub_amd_t(DEF(c), DEF(a), DEF(b)) { 
   
   int i,j,x,y;
   DEFREGISTERS;
@@ -673,7 +688,8 @@ void sub_amd_t(DEF(c), DEF(a), DEF(b)) {
     for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
   if (y<b.n)  /* B is larger than A */
     for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); 
-  
+  return 0;
+
   //c.beta = 1;
 }
 
@@ -786,51 +802,56 @@ TAddOperands * divideAdditions (DEF(c), DEF(a), DEF(b),
 }
 
 
-void ptcopy(DEF(c), DEF(a), DEF(b)) {
+int ptcopy(DEF(c), DEF(a), DEF(b)) {
   
   
 
   pThreadedMatrixComputation(copy_matrix,divideAdditions, USE(c),USE(a),USE(b)); 
+  return 0;
 
 
 }
-void ptadd(DEF(c), DEF(a), DEF(b)) {
+int ptadd(DEF(c), DEF(a), DEF(b)) {
   
   
 
   pThreadedMatrixComputation(add_amd,divideAdditions, USE(c),USE(a),USE(b)); 
   //pThreadedMatrixComputation(add,divideAdditions, USE(c),USE(a),USE(b)); 
+  return 0;
 
 
 }
 
-void ptadd_t(DEF(c), DEF(a), DEF(b)) {
+int ptadd_t(DEF(c), DEF(a), DEF(b)) {
   
   
 
   pThreadedMatrixComputation(add_amd_t,divideAdditions, USE(c),USE(a),USE(b)); 
   // pThreadedMatrixComputation(add_t,divideAdditions, USE(c),USE(a),USE(b)); 
 
+   return 0;
 
 }
 
-void ptsub(DEF(c), DEF(a), DEF(b)) {
+int ptsub(DEF(c), DEF(a), DEF(b)) {
   
   
 
   pThreadedMatrixComputation(sub_amd,divideAdditions, USE(c),USE(a),USE(b)); 
   //pThreadedMatrixComputation(sub,divideAdditions, USE(c),USE(a),USE(b)); 
 
+   return 0;
 
 }
 
-void ptsub_t(DEF(c), DEF(a), DEF(b)) {
+int ptsub_t(DEF(c), DEF(a), DEF(b)) {
   
   
 
   pThreadedMatrixComputation(sub_amd_t,divideAdditions, USE(c),USE(a),USE(b)); 
   //pThreadedMatrixComputation(sub_t,divideAdditions, USE(c),USE(a),USE(b)); 
 
+  return 0;
 
 }
 

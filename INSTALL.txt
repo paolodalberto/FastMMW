@@ -89,6 +89,13 @@ cd MAT-ADD-Generator/
 gcc addgen.c -o addgen
 cd ../
 
+Just in case we need to create these 
+mkdir Executable/Single
+mkdir Executable/Double
+mkdir Executable/SComplex
+mkdir Executable/DComplex
+
+
 addgen will be used in the installation process and, basically, we
 create MA kernels: register allocation, instruction scheduling and
 loop unrolling. For example, if you run  
@@ -407,6 +414,6 @@ configurations that may not fit your requirements.
 
 These have been tested on two different systems and different Linux
 versions. They may not provide the best solutions but this approach
-provide a framework to build libraries and applications without
+provides a framework to build libraries and applications without
 knowing to many details.
  

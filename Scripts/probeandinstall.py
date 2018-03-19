@@ -504,8 +504,9 @@ if __name__ == "__main__":
     print "Policy", policy
 
     L = []
-    steps = 3
-    for n in range(1,len(Cores)+1,3):
+    steps = 4
+    L.append(prepareArchitecture(Processors,Cores,1,policy))
+    for n in range(4,len(Cores)+1,4):
         L.append(prepareArchitecture(Processors,Cores,n,policy))
     print L
 

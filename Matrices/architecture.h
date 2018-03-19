@@ -21,6 +21,8 @@
 */
 #ifndef ARCHITECTURE_SPECIFIC
 #define ARCHITECTURE_SPECIFIC 1
+
+#include <stdio.h>
 #include <mat-operands.h>
 //#define XSCALE 1
 #define ATHLON 1
@@ -32,6 +34,11 @@
 #include <cblas.h>
 
 // TYPE of the matrix and the MM
+
+#ifdef HALF_PRECISION
+#define GEMM cblas_sgemm
+#define GEMA cblas_sgema
+#endif
 
 #ifdef SINGLE_PRECISION
 #define GEMM cblas_sgemm
@@ -87,6 +94,15 @@
 
 // TYPE of the matrix and the MM
 
+#ifdef HALF_PRECISION
+#define GEMMCL                   CLBlastHgemm  //clblasSgemm
+#define GEMM                     h_gpuGEMM
+#define GEMMA                    h_gpuGEMMA
+
+#define mm_leaf_computation      h_gpuGEMM
+#define mm_leaf_computation_madd h_gpuGEMMA
+
+#endif
 
 
 #ifdef SINGLE_PRECISION
@@ -98,6 +114,7 @@
 #define mm_leaf_computation_madd s_gpuGEMMA
 
 #endif
+
 
 #ifdef DOUBLE_PRECISION
 #define GEMMCL                   CLBlastDgemm //clblasDgemm

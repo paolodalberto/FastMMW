@@ -43,7 +43,7 @@ static int LEAF_TEMP;
 static int debug=0;
 
 // C = A*B classic algorithm 
-void mul(DEF(c), DEF(a), DEF(b)) { 
+int mul(DEF(c), DEF(a), DEF(b)) { 
   int i,j;
   int k ;
   Mat temp;
@@ -109,7 +109,7 @@ void mul(DEF(c), DEF(a), DEF(b)) {
     print(USE(c));
   }
   //  debug=0;
-
+  return 0;
 }
 
 static 
@@ -142,7 +142,7 @@ void *basic_mul_computation(void *arg) {
 }
 
 
-void mulpt(DEF(c), DEF(a), DEF(b)) {
+int  mulpt(DEF(c), DEF(a), DEF(b)) {
 
   int i,j,l;
   cpu_set_t current_mask; 
@@ -246,12 +246,12 @@ void mulpt(DEF(c), DEF(a), DEF(b)) {
  
 
   sched_setaffinity(0,sizeof(current_mask),&(current_mask));
-  
+  return 0;
 }
 
 
 // C = A*B classic algorithm 
-void madd(DEF(c), DEF(a), DEF(b)) { 
+int  madd(DEF(c), DEF(a), DEF(b)) { 
   int i,j;
   int k ;
   Mat temp;
@@ -315,7 +315,7 @@ void madd(DEF(c), DEF(a), DEF(b)) {
     print(USE(c));
   }
   //  debug=0;
-
+  return 0;
 }
 
 
@@ -960,7 +960,7 @@ int wm(DEF(c), DEF(a), DEF(b)) {
 
 
 // Cache oblivious + Strassen C+=A*B
-void oaddmul(DEF(c), DEF(a), DEF(b)) { 
+int oaddmul(DEF(c), DEF(a), DEF(b)) { 
   
   if (a.m>= DEFORM_FACTOR_AM*max(a.n,b.n)) { 
     /* A is tall */
@@ -977,11 +977,11 @@ void oaddmul(DEF(c), DEF(a), DEF(b)) {
     CMC( HD1(c), =, a, oaddmul, HD1(b));
     
   } else CMC(c,=, a, saddmul , b);
-  
+  return 0;
 }
 
 // Cache oblivious + Strassen C=A*B
-void omul(DEF(c), DEF(a), DEF(b)) { 
+int omul(DEF(c), DEF(a), DEF(b)) { 
    
   if (a.m>= DEFORM_FACTOR_AM*max(a.n,b.n)) {     /* A is tall */
     CMC( VD0(c), =, VD0(a), omul, b);
@@ -995,11 +995,11 @@ void omul(DEF(c), DEF(a), DEF(b)) {
     CMC( HD0(c), =, a, omul, HD0(b));
     CMC( HD1(c), =, a, omul, HD1(b));
   } else CMC(c,=, a, smul , b);
-  
+  return 0;
 }
  
 // Cache oblivious + Strassen C+=A*B
-void owaddmul(DEF(c), DEF(a), DEF(b)) { 
+int owaddmul(DEF(c), DEF(a), DEF(b)) { 
   
   if (a.m>= DEFORM_FACTOR_AM*max(a.n,b.n)) { 
     /* A is tall */
@@ -1016,11 +1016,11 @@ void owaddmul(DEF(c), DEF(a), DEF(b)) {
     CMC( HD1(c), =, a, oaddmul, HD1(b));
     
   } else CMC(c,=, a, waddmul , b);
-  
+  return 0;
 }
 
 // Cache oblivious + Strassen C=A*B
-void owmul(DEF(c), DEF(a), DEF(b)) { 
+int  owmul(DEF(c), DEF(a), DEF(b)) { 
 
   if (a.m>= DEFORM_FACTOR_AM*max(a.n,b.n)) {     /* A is tall */
     CMC( VD0(c), =, VD0(a), owmul, b);
@@ -1034,7 +1034,9 @@ void owmul(DEF(c), DEF(a), DEF(b)) {
     CMC( HD0(c), =, a, owmul, HD0(b));
     CMC( HD1(c), =, a, owmul, HD1(b));
   } else CMC(c,=, a, wmul , b);
-  
+
+
+  return 0;
 }
  
 
@@ -2607,14 +2609,16 @@ int rmul(DEF(c), DEF(a), DEF(b), MatrixComputation leaf) {
 
  
 static inline  
-void gotmul(DEF(c), DEF(a), DEF(b)) {
+int gotmul(DEF(c), DEF(a), DEF(b)) {
  
   mm_leaf_computation(USE(c),USE(a),USE(b)); 
+  return 0;
 }
 static inline 
-void gotmadd(DEF(c), DEF(a), DEF(b)) {
+int  gotmadd(DEF(c), DEF(a), DEF(b)) {
  
   mm_leaf_computation_madd(USE(c),USE(a),USE(b)); 
+  return 0;
 }
  
  
@@ -2652,13 +2656,13 @@ TAddOperands * divideMul (DEF(c), DEF(a), DEF(b),
 }
  
  
-void ptaddmul(DEF(c), DEF(a), DEF(b)) {
+int ptaddmul(DEF(c), DEF(a), DEF(b)) {
   
   
   
   pThreadedMatrixComputation(gotmul,divideMul, USE(c),USE(a),USE(b)); 
   
-  
+  return 0;
 }
  
 #define PIPELINE 1

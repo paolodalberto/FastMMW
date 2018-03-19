@@ -53,6 +53,17 @@
 
 #ifdef APPLICATION
 
+struct matrix_h {
+  short       *data; // pointer to the location in the matrix
+  int m,  n, M, N;   // logical size mxn inside a real matrix size MxN
+  char trans;        // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
+  float beta;        // multiplicative coefficients
+#ifdef CLBLAS
+  int gpu;          // destination computation
+#endif
+};
+typedef struct matrix_h H_Matrix;
+
 struct matrix_f {
   float       *data; // pointer to the location in the matrix
   int m,  n, M, N;   // logical size mxn inside a real matrix size MxN
@@ -108,6 +119,7 @@ struct matrix_dc {
 typedef struct matrix_dc Z_Matrix;
 
 
+#define DEF_H(x) H_Matrix x
 #define DEF_S(x) S_Matrix x
 #define DEF_D(x) D_Matrix x
 #define DEF_C(x) C_Matrix x
@@ -117,7 +129,9 @@ typedef struct matrix_dc Z_Matrix;
 
 
 
-#if(SINGLE_PRECISION &&  LIBRARY_PACKAGE)
+#if(HALF_PRECISION &&  LIBRARY_PACKAGE)
+#define Matrix H_Matrix
+#elif(SINGLE_PRECISION &&  LIBRARY_PACKAGE)
 #define Matrix S_Matrix
 #elif(DOUBLE_PRECISION &&  LIBRARY_PACKAGE)
 #define Matrix D_Matrix
@@ -129,8 +143,11 @@ typedef struct matrix_dc Z_Matrix;
 
 
 #ifdef CLBLAS
-#include <clAmdBlas.h> 
+#include <clblast_c.h>
+
 #if(SINGLE_PRECISION && LIBRARY_PACKAGE)
+typedef cl_half Mat;
+#elif(SINGLE_PRECISION && LIBRARY_PACKAGE)
 typedef cl_float Mat;
 #elif(DOUBLE_PRECISION && LIBRARY_PACKAGE)
 typedef cl_double Mat;
@@ -146,7 +163,9 @@ typedef cl_float Mat;
 #endif
 
 #ifndef CLBLAS
-#if(SINGLE_PRECISION && LIBRARY_PACKAGE)
+#if(HALF_PRECISION && LIBRARY_PACKAGE)
+typedef short Mat;
+#elif(SINGLE_PRECISION && LIBRARY_PACKAGE)
 typedef float Mat;
 #elif(DOUBLE_PRECISION && LIBRARY_PACKAGE)
 typedef double Mat;

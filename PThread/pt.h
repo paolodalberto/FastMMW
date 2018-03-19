@@ -99,7 +99,7 @@ static int _T[NUM_THREADS] = {2,8};
 
 #endif
 
-typedef void  (*MatrixComputation)(DEF(c),DEF(a),DEF(b));
+typedef int  (*MatrixComputation)(DEF(c),DEF(a),DEF(b));
 typedef struct operands_addition TAddOperands;
 
 typedef TAddOperands* (*DivideOperands)(DEF(c), 
