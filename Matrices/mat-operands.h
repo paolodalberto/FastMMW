@@ -145,7 +145,7 @@ typedef struct matrix_dc Z_Matrix;
 #ifdef CLBLAS
 #include <clblast_c.h>
 
-#if(SINGLE_PRECISION && LIBRARY_PACKAGE)
+#if(HALF_PRECISION && LIBRARY_PACKAGE)
 typedef cl_half Mat;
 #elif(SINGLE_PRECISION && LIBRARY_PACKAGE)
 typedef cl_float Mat;

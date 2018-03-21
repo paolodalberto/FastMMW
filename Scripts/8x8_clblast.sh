@@ -23,7 +23,16 @@ function small_body_cp {
 }
 
 
-    
+
+
+function execute45 { 
+
+    for i in 22000 25000 28000  30000 35000 38000 40000 43000 
+    do
+	small_body_cp $1 $i $2 $3 $4
+    done
+}
+
 
 
 

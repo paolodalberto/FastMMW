@@ -20,7 +20,12 @@
 #include <gpuCompute.h>
 
   
-#if(SINGLE_PRECISION)
+#if(HALF_PRECISION)
+#define DATATYPE cl_half
+static const DATATYPE            alpha_zero = 0.0;  
+static const DATATYPE            alpha_one = 1.0;  
+static const DATATYPE            beta  = 1.0;
+#elif(SINGLE_PRECISION)
 #define DATATYPE cl_float
 static const DATATYPE            alpha_zero = 0.0;  
 static const DATATYPE            alpha_one = 1.0;  

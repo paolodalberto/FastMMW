@@ -162,6 +162,10 @@ double duration;
 
 #ifndef  AUTOMATIC
 
+#if(HALF_PRECISION)
+//#define LEAF 2000
+#define LEAF 20
+#endif
 #if(SINGLE_PRECISION)
 //#define LEAF 2000
 #define LEAF 20
