@@ -16,10 +16,11 @@ function small_body_cp {
     echo 0 0 1 1 1 ${2} ${2} ${2} ${2}  $5 $3 $4  | Executable/$1/gotos23 | grep GFLOPS 
     echo ${2} M49--${5}-$3-$4
     echo 0 0 1 1 1 ${2} ${2} ${2} ${2}  $5 $3 $4  | Executable/$1/gotos49 | grep GFLOPS 
-#    echo ${2} M99--$3-$4
-#    echo 0 0 1 1 1 ${2} ${2} ${2} ${2}  $5 $3 $4  | Executable/$1/gotos99 | grep GFLOPS 
-#    echo ${2} M343-$3-$4
-#    echo 0 0 1 1 1 ${2} ${2} ${2} ${2}  $5 $3 $4  | Executable/$1/gotos343 | grep GFLOPS 
+
+    #    echo ${2} M99--$3-$4
+    #    echo 0 0 1 1 1 ${2} ${2} ${2} ${2}  $5 $3 $4  | Executable/$1/gotos99 | grep GFLOPS 
+    #    echo ${2} M343-$3-$4
+    #    echo 0 0 1 1 1 ${2} ${2} ${2} ${2}  $5 $3 $4  | Executable/$1/gotos343 | grep GFLOPS 
 }
 
 
@@ -27,7 +28,7 @@ function small_body_cp {
 
 function execute45 { 
 
-    for i in 22000 25000 28000  30000 35000 38000 40000 43000 
+    for i in 25000 28000  30000 35000 38000 40000 43000 45000 
     do
 	small_body_cp $1 $i $2 $3 $4
     done
@@ -81,6 +82,14 @@ function execute21_2 {
 }
 
 
+echo "Half" 
+#execute45 Half   0 1 0
+#execute45 Half   0 2 0
+#execute45 Half   2 4 0
+execute45 Half   3 4 0
+execute45 Half   0 4 0
+
+exit 
 echo "Single" 
 execute40 Single   0 2 0
 execute40 Single   0 4 0
