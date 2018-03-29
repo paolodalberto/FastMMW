@@ -2,10 +2,17 @@
 #include "stdlib.h"
 #include "mat-operands_3.h"
 #include "pt.h"
+#include <architecture.h>
 #include <mat-mulkernels.h>
-#include "architecture.h"
+#include "gpuCompute.h"
 
-extern void mm_leaf_computation(DEF(C),DEF(A),DEF(B));
+#if(CLBLAS||FPGA)
+int GEMMFPGA  (DEF(c), DEF(a), DEF(b));
+int GEMM      (DEF(c), DEF(a), DEF(b));
+#endif
+
+
+//extern void mm_leaf_computation(DEF(C),DEF(A),DEF(B));
 
 
 /*
@@ -163,6 +170,7 @@ int addition_queue(Matrix R,
 
 
 extern  int _sizes[4];
+extern  DeviceBookmark bookmarks[4];
 		      
 
 
@@ -273,12 +281,26 @@ int generate_queue(Matrix C, Matrix A, Matrix B,
     if (DEBUG)  printf("GPU %d  Problem size %d and Memory size %d\n",
 		       Ps[i].gpu,
 		       sizeof(Mat)*3*Ps[i].M*Ps[i].N/(1024),
-		       _sizes[Ps[i].gpu]);
-    if (Ps[i].gpu>=0 && Ps[i].gpu<=3 && sizeof(Mat)*3*Ps[i].M*Ps[i].N/(1024) > _sizes[Ps[i].gpu]) { 
+		       bookmarks[Ps[i].gpu].size);
+    if (Ps[i].gpu>=0 && Ps[i].gpu<=3 && sizeof(Mat)*3*Ps[i].M*Ps[i].N/(1024) > bookmarks[Ps[i].gpu].size) { 
       if (DEBUG)  printf("%d too big we use wm \n",i);
       products[i].m  = wm ;
-    } else
+    }
+#if FPGA
+    else { 
+      if (DEBUG)  printf("%s \n",bookmarks[Ps[i].gpu].name);
+      if (strstr(bookmarks[Ps[i].gpu].name, "xilinx")  ) {
+	if (DEBUG)  printf("%s \n",bookmarks[Ps[i].gpu].name);
+	products[i].m  = mm_leaf_computation  ;
+      }
+      else
+	products[i].m  = mm_leaf_computation_gpu  ;
+    }
+#else
+    else
       products[i].m  = mm_leaf_computation  ;
+
+#endif
 #else
     products[i].m  = wm;
 #endif

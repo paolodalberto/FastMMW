@@ -40,7 +40,7 @@ OPT =   $(EXTRA) $(MACROS)  -O2 -msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opt
 #ARC=Fiji
 #ARCHITECTUREGPU= /home/paolo/Desktop/OpenCL3/clBLAS-2.10.0-${ARC}-Linux-x64-CL2.0
 
-ARCHITECTUREGPU= $(D)/../CLBlast/
+ARCHITECTUREGPU= $(D)/CLBlast/
 
 # Includes
 INC = -I $(HOMEDIR) -I $(ATLAS)/include -I $(HOMEDIR)/Add -I $(HOMEDIR)/Mul \
@@ -57,11 +57,19 @@ MKLLIB = -L ${MKL_BLAS}
 ##CLLIBS = -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/  -L $(ARCHITECTUREGPU)/lib64/ #-L /opt/AMDAPPSDK-3.0/lib/x86_64/
 
 CLLIBS =   -L /home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library -L /opt/rocm/opencl/lib/x86_64/
-CLLIBS =   -L $(ARCHITECTUREGPU)/gpupro   -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ #/opt/rocm/opencl/lib/x86_64/ #
+CLLIBS =   -L $(ARCHITECTUREGPU)/build/   -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ #/opt/rocm/opencl/lib/x86_64/ #
+
+FPGALIBS = -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64 \
+	-L /home/prj47-rack-31/gemx/lib  \
+	-L$(ARCHITECTUREGPU)/build/ \
+	-L /opt/amdgpu-pro/lib/x86_64-linux-gnu/
 
 
 opencllibs =  -l OpenCL -l clBLAS -lpthread
 opencllibs =  -l OpenCL -l clblast -lpthread
+
+fpgalibs =  -l gemxhost -lpthread -l clblast -l xilinxopencl -l OpenCL
+
 
 ## Libraries 
 atlaslib =-llapack  -lptcblas   -latlas -lm  -lpthread #-lptf77blas -lcblas -lpthread -lf77blas
@@ -112,6 +120,7 @@ code:
 
 obj = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o 
 objgpu = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o GPU/dgemm_multigraphic.o GPU/platform.o  Mul/mat-s3x3x3_23_JinsooOh_20131108a.o
+objfpga = ${objgpu} FPGA/fpga.o
 obj2 = $(obj) Error/doubly_compensated_sumc.o Sort/quicksort.o 
 
 UNROLL = 8
@@ -330,6 +339,13 @@ gotos7: MACROS+=-DLIBRARY_PACKAGE
 gotos7:$(objgpu)
 	$(CC) -c $(OPT) -DM7_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
 	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos7 $(math)  $(CLLIBS) $(opencllibs) #$(ALIB) $(atlaslib) #$(GLIB) $(gotolib) #$(ALIB) $(atlaslib)
+
+gotos7p: EXTRA_GOTO=-DFPGA -DCLBLAS 
+gotos7p: MACROS+=-DLIBRARY_PACKAGE
+gotos7p:$(objfpga)
+	$(CC) -c $(OPT) -DM7_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
+	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objfpga) -o Executable/$(TYPE)/gotos7p $(math)  $(FPGALIBS) $(fpgalibs) 
+
 
 gotos49: EXTRA_GOTO=-DCLBLAS
 gotos49: MACROS+=-DLIBRARY_PACKAGE

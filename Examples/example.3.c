@@ -283,7 +283,7 @@ int main() {
   //print(c);
 
 
-#ifdef CLBLAS
+#if(CLBLAS||FPGA)
   {
     int platform=0;
     printf("platform ->");
@@ -293,6 +293,14 @@ int main() {
   }
 #endif
 
+#if(FPGA)
+  printf("Host\n");
+  
+  
+  MakeFCNHost("../../../gemx/fcn/out_hw/gemx.xclbin", "gemxKernel_0", "vu9p");  
+#endif 
+
+  
 #ifdef MYSCHED
 
 

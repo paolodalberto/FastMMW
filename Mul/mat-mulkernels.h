@@ -436,6 +436,7 @@ int BMOWR_PIPE(DEF(c), DEF(a), DEF(b),TAddOperands *args);
 int BMOWR(DEF(c), DEF(a), DEF(b));
 int BMOWRR(DEF(c), DEF(a), DEF(b));
 
+
 #endif
 
 #elif(APPLICATION)
@@ -479,7 +480,8 @@ int  h_BMADDR          (DEF_H(c), DEF_H(a), DEF_H(b));
 int  h_BMOWR_PIPE     (DEF_H(c), DEF_H(a), DEF_H(b),TAddOperands *args);
 int  h_BMOWR          (DEF_H(c), DEF_H(a), DEF_H(b));
 int  h_BMOWRR         (DEF_H(c), DEF_H(a), DEF_H(b));
-int  h_gpuGEMM        (DEF_H(c), DEF_s(a), DEF_H(b));
+int  h_gpuGEMM        (DEF_H(c), DEF_H(a), DEF_H(b));
+int  h_fpgaGEMM        (DEF_H(c), DEF_H(a), DEF_H(b));
 
 
 
@@ -522,7 +524,7 @@ int  s_BMADDR          (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_BMOWR_PIPE     (DEF_S(c), DEF_S(a), DEF_S(b),TAddOperands *args);
 int  s_BMOWR          (DEF_S(c), DEF_S(a), DEF_S(b));
 int  s_BMOWRR         (DEF_S(c), DEF_S(a), DEF_S(b));
-int  s_gpuGEMM        (DEF_S(c), DEF_s(a), DEF_S(b));
+int  s_gpuGEMM        (DEF_S(c), DEF_S(a), DEF_S(b));
 
 
 int d_mul            (DEF_D(c), DEF_D(a), DEF_D(b));
@@ -564,7 +566,7 @@ int  d_BMADDR          (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_BMOWR_PIPE     (DEF_D(c), DEF_D(a), DEF_D(b),TAddOperands *args);
 int  d_BMOWR          (DEF_D(c), DEF_D(a), DEF_D(b));
 int  d_BMOWRR         (DEF_D(c), DEF_D(a), DEF_D(b));
-int  d_gpuGEMMD       (DEF_D(c), DEF_D(a), DEF_D(b));
+int  d_gpuGEMM       (DEF_D(c), DEF_D(a), DEF_D(b));
 
 
 int c_mul            (DEF_C(c), DEF_C(a), DEF_C(b));
@@ -606,7 +608,7 @@ int  c_BMADDR          (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_BMOWR_PIPE     (DEF_C(c), DEF_C(a), DEF_C(b),TAddOperands *args);
 int  c_BMOWR          (DEF_C(c), DEF_C(a), DEF_C(b));
 int  c_BMOWRR          (DEF_C(c), DEF_C(a), DEF_C(b));
-int  c_gpuGEMMC       (DEF_C(c), DEF_C(a), DEF_C(b));
+int  c_gpuGEMM       (DEF_C(c), DEF_C(a), DEF_C(b));
 
 
 int z_mul            (DEF_Z(c), DEF_Z(a), DEF_Z(b));
@@ -648,6 +650,6 @@ int  z_BMADDR          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_BMOWR_PIPE     (DEF_Z(c), DEF_Z(a), DEF_Z(b),TAddOperands *args);
 int  z_BMOWR          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
 int  z_BMOWRR          (DEF_Z(c), DEF_Z(a), DEF_Z(b));
-int  z_gpuGEMMC       (DEF_Z(c), DEF_Z(a), DEF_Z(b));		       
+int  z_gpuGEMM       (DEF_Z(c), DEF_Z(a), DEF_Z(b));		       
 #endif // if  LIBRARY else APPLICATION
 #endif // MODULE 

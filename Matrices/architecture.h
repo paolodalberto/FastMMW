@@ -94,6 +94,21 @@
 
 // TYPE of the matrix and the MM
 
+#ifdef FPGA
+
+#define GEMMCL                   CLBlastHgemm  //clblasSgemm
+#define GEMMFPGA                 h_fpgaGEMM
+#define GEMMFPGAA                h_fpgaGEMMA
+#define GEMM                     h_gpuGEMM
+#define GEMMA                    h_gpuGEMMA
+
+#define mm_leaf_computation      h_fpgaGEMM
+#define mm_leaf_computation_madd h_fpgaGEMMA
+
+#define mm_leaf_computation_gpu      h_gpuGEMM
+#define mm_leaf_computation_madd_gpu h_gpuGEMMA
+
+#else
 #ifdef HALF_PRECISION
 #define GEMMCL                   CLBlastHgemm  //clblasSgemm
 #define GEMM                     h_gpuGEMM
@@ -101,9 +116,8 @@
 
 #define mm_leaf_computation      h_gpuGEMM
 #define mm_leaf_computation_madd h_gpuGEMMA
-
 #endif
-
+#endif
 
 #ifdef SINGLE_PRECISION
 #define GEMMCL                   CLBlastSgemm  //clblasSgemm

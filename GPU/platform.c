@@ -14,9 +14,6 @@
  * limitations under the License.
  * ************************************************************************/
 
-#ifndef NUM_THREADS
-#define NUM_THREADS 4
-#endif
 #include <gpuCompute.h>
 
   
@@ -126,9 +123,10 @@ int  set_platform_and_devices(int platform) {
   ctxs =      (cl_context *)    malloc(sizeof(cl_context) * platformCount);
   clGetPlatformIDs(platformCount, platforms, NULL);
   
+  printf("platformCount %d\n",platformCount); 
   d=0;
   for (i = 0; i < platformCount; i++) {
-   
+    int GPU=1;
     printf("\n %d %d. Platform \n", i,platform);
     for (j = 0; j < attributeCount; j++) {
       // get platform attribute value size
@@ -145,13 +143,28 @@ int  set_platform_and_devices(int platform) {
     
     err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, DEVICES, device + d, &k);
     if (err != CL_SUCCESS) {
-      checkErrors(err,"clGetDeviceIDs",10);      printf( "clGetDeviceIDs() failed with %d\n", err );      return 1;
-    } else {  deviceInformation( device+d,k);  printf("N of GPUS %d \n",ndevices);      // for each device print critical attributes
+      GPU=0;
+      printf( "clGetDeviceIDs() failed with %d\n", err );
+      err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ACCELERATOR, DEVICES, device + d, &k);
+      if (err != CL_SUCCESS) {
+	checkErrors(err,"clGetDeviceIDs",10);
+	printf( "clGetDeviceIDs() failed with %d\n", err );
+	return 1;
+      }
+      else {
+	deviceInformation( device+d,k);  printf("N of ACCS %d \n",k);
+      }
+      
+    } else {
+      deviceInformation( device+d,k);  printf("N of GPUS %d \n",k);      // for each device print critical attributes
     }
 
+    
     // context per platform
     props[1] = (cl_context_properties)platforms[i];
-    ctxs[i] = clCreateContext(props, k , device+d, NULL, NULL, &err);
+    printf(" context %i  %d at %d %d=%d \n", i, k,d,props[1],CL_CONTEXT_PLATFORM);
+    //ctxs[i] = clCreateContext(props, k , device+d, NULL, NULL, &err);
+    ctxs[i] = clCreateContextFromType(props, (GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_ACCELERATOR,NULL, NULL, &err);
     if (err != CL_SUCCESS) {
       checkErrors(err,"create context",158);
       printf( "clCreateContext() failed with %d\n", err );
@@ -160,10 +173,23 @@ int  set_platform_and_devices(int platform) {
     
     for ( int m=0; m<k; m++) { // for each device in this platform
       {
+	
 	cl_ulong buf_ulong;
 	size_t valueSize;
 	// print device memory size
-	clGetDeviceInfo(device[d+m], CL_DEVICE_GLOBAL_MEM_SIZE,sizeof(buf_ulong), &buf_ulong, NULL);
+	cl_int err ;
+	printf(" counts %d \n", counts);
+	err = clGetDeviceInfo(device[d+m], CL_DEVICE_GLOBAL_MEM_SIZE,sizeof(buf_ulong), &buf_ulong, NULL);
+
+	
+	switch (err) {
+	case CL_INVALID_DEVICE:
+	  printf(" CL_INVALID_DEVICE\n");
+	case CL_INVALID_VALUE:
+	  printf(" CL_INVALID_VALUE\n");
+	case CL_SUCCESS:
+	  break;
+	}
 	_sizes[counts] = buf_ulong/1024;
 	printf(" %d %d Global Memory: %lu KB %d\n", device[m+d],m, buf_ulong/(1024),_sizes[counts]);
 	
@@ -178,10 +204,12 @@ int  set_platform_and_devices(int platform) {
 	clGetDeviceInfo(device[m+d], CL_DEVICE_NAME, 0, NULL, &valueSize);
 	bookmarks[counts].name = (char*) malloc(valueSize);
 	clGetDeviceInfo(device[m], CL_DEVICE_NAME, valueSize, bookmarks[counts].name, NULL);
+	printf(" Name %s \n", bookmarks[counts].name); 
+
 	bookmarks[counts].size = _sizes[counts] ;
 	bookmarks[counts].gpu = counts;
 	gpus[counts] = counts;
-	  
+	
 	counts +=1;
       }
     }
@@ -485,7 +513,7 @@ int deviceInformation(cl_device_id *device, int ndevices) {
     clGetDeviceInfo(device[j], CL_DEVICE_NAME, 0, NULL, &valueSize);
     value = (char*) malloc(valueSize);
     clGetDeviceInfo(device[j], CL_DEVICE_NAME, valueSize, value, NULL);
-    printf("%d. Device: %s\n", j, value);
+    printf(" %d.0 Device: %s\n", j, value);
     free(value);
 
     // print hardware device version
@@ -522,10 +550,10 @@ int deviceInformation(cl_device_id *device, int ndevices) {
     //if (ndevices>1) _sizes[j] = buf_ulong;
     
     clGetDeviceInfo(device[j], CL_DEVICE_LOCAL_MEM_SIZE,sizeof(buf_ulong), &buf_ulong, NULL);
-    printf(" %d.%d Local Memory: %lu KB\n", j, 5, buf_ulong/(1024));
+    printf(" %d.%d Local Memory: %lu KB\n", j, 6, buf_ulong/(1024));
     
     clGetDeviceInfo(device[j], CL_DEVICE_HOST_UNIFIED_MEMORY,sizeof(buf_ulong), &buf_ulong, NULL);
-    printf(" %d.%d Unified Memory: %lu\n", j, 5, buf_ulong);
+    printf(" %d.%d Unified Memory: %lu\n", j, 6, buf_ulong);
     
     
 
