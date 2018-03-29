@@ -27,8 +27,10 @@ Macro = [
     '-DSINGLE_COMPLEX','-DDOUBLE_COMPLEX'
 ]
 NSIZE = [10000, 10000,10000,5000]
-
-unrolling = [1,2, 4,8,16 ]
+steps = 8 # number of cores
+unrolling = [1,2, 4
+             ,8,16
+]
 
 blas = 'GotoBLAS'
 BLASLIB = "../OpenBLAS/install/lib"
@@ -504,18 +506,24 @@ if __name__ == "__main__":
     print "Policy", policy
 
     L = []
-    steps = 4
+    
     L.append(prepareArchitecture(Processors,Cores,1,policy))
-    for n in range(4,len(Cores)+1,4):
+    for n in range(steps,len(Cores)+1,steps):
         L.append(prepareArchitecture(Processors,Cores,n,policy))
     print L
 
 
     #sys.exit()
-
+    import sys
+    import os
     i = 0
     while (i< len(Type)):
- 
+
+        try:
+            os.stat("Executable/"+Type[i])
+        except:
+            print "creating ", "Executable/"+Type[i]
+            os.mkdir("Executable/"+Type[i])
 
         """
         Matrix Addition optimization and break even point estimation
