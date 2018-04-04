@@ -245,3 +245,54 @@ struct mul_data {
 
 typedef struct mul_data GPUData;
 #endif
+
+
+
+#if(HALF_PRECISION)
+#define DATATYPE cl_half
+static const DATATYPE            alpha_zero = 0.0;  
+static const DATATYPE            alpha_one = 1.0;  
+static const DATATYPE            beta  = 1.0;
+#elif(SINGLE_PRECISION)
+#define DATATYPE cl_float
+static const DATATYPE            alpha_zero = 0.0;  
+static const DATATYPE            alpha_one = 1.0;  
+static const DATATYPE            beta  = 1.0;
+#elif(DOUBLE_PRECISION)
+#define DATATYPE cl_double
+static const DATATYPE            alpha_zero = 0.0;  
+static const DATATYPE            alpha_one = 1.0;  
+static const DATATYPE            beta  = 1.0;
+#elif(SINGLE_COMPLEX)
+#define DATATYPE cl_float2
+static const DATATYPE            alpha_zero = { 0.0, 0.0};  
+static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
+static const DATATYPE            beta  = {1.0, 1.0 };
+#elif(DOUBLE_COMPLEX)
+#define DATATYPE cl_double2
+static const DATATYPE            alpha_zero = { 0.0, 0.0};  
+static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
+static const DATATYPE            beta  = {1.0, 1.0 };
+#endif
+
+
+#if(AMDCLBLAS)
+#if(COLUMN_MAJOR)
+static const clAmdBlasOrder     order  = clAmdBlasColumnMajor;
+#elif(ROW_MAJOR)
+static const clAmdBlasOrder     order  = clAmdBlasRowMajor;
+#endif
+
+static const clAmdBlasTranspose transA   = clAmdBlasTrans;
+static const clAmdBlasTranspose notransA = clAmdBlasNoTrans;
+#else
+#if(COLUMN_MAJOR)
+static const int     order  = CLBlastLayoutColumnMajor,;
+#elif(ROW_MAJOR)
+static const int     order  = CLBlastLayoutRowMajor;
+#endif
+
+static const int notransA = CLBlastTransposeNo;
+static const int transA   = CLBlastTransposeYes;
+
+#endif

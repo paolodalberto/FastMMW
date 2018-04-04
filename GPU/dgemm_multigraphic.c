@@ -20,54 +20,6 @@
 #include <gpuCompute.h>
 
   
-#if(HALF_PRECISION)
-#define DATATYPE cl_half
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(SINGLE_PRECISION)
-#define DATATYPE cl_float
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(DOUBLE_PRECISION)
-#define DATATYPE cl_double
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(SINGLE_COMPLEX)
-#define DATATYPE FloatComplex
-static const DATATYPE            alpha_zero = { 0.0, 0.0};  
-static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
-static const DATATYPE            beta  = {1.0, 1.0 };
-#elif(DOUBLE_COMPLEX)
-#define DATATYPE DoubleComplex
-static const DATATYPE            alpha_zero = { 0.0, 0.0};  
-static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
-static const DATATYPE            beta  = {1.0, 1.0 };
-#endif
-
-
-#if(AMDCLBLAS)
-#if(COLUMN_MAJOR)
-static const clAmdBlasOrder     order  = clAmdBlasColumnMajor;
-#elif(ROW_MAJOR)
-static const clAmdBlasOrder     order  = clAmdBlasRowMajor;
-#endif
-
-static const clAmdBlasTranspose transA   = clAmdBlasTrans;
-static const clAmdBlasTranspose notransA = clAmdBlasNoTrans;
-#else
-#if(COLUMN_MAJOR)
-static const int     order  = CLBlastLayoutColumnMajor,;
-#elif(ROW_MAJOR)
-static const int     order  = CLBlastLayoutRowMajor;
-#endif
-
-static const int notransA = CLBlastTransposeNo;
-static const int transA   = CLBlastTransposeYes;
-
-#endif
 
 
 
@@ -182,16 +134,23 @@ void *basic_mul_computation_gpugemm(void *arg) {
   if (DEBUG) printf("GPU %d Sent Data \n",d->C.gpu);
     
   
-
+ 
 #if(SINGLE_COMPLEX || DOUBLE_COMPLEX)  
-  alpha.s[0]= creal(d->A.beta*d->B.beta);
-  alpha.s[1]= cimag(d->A.beta*d->B.beta);
-  beta.s[0] = creal(d->C.beta);
-  beta.s[1] = cimag(d->C.beta);
-  if (DEBUG) {
-    printf("GPU %d Sending  kernel \n",d->C.gpu);
-    printf("GPU %d  Alpha %f %f Beta %f %f \n",d->C.gpu, alpha.s[0], alpha.s[1], beta.s[0], beta.s[1]);
+  if (1) { 
+    DATATYPE al = {creal(d->A.beta*d->B.beta),cimag(d->A.beta*d->B.beta)};
+    DATATYPE bl = {creal(d->C.beta),cimag(d->C.beta)};
+    alpha= al;
+    beta = bl;
     
+    if (DEBUG) {
+      printf("GPU %d Sending  kernel \n",d->C.gpu);
+      printf("GPU %d  Alpha %f %f Beta %f %f \n",d->C.gpu, alpha.s[0], alpha.s[1], beta.s[0], beta.s[1]);
+      
+    }
+    /*  alpha.s[0]= creal(d->A.beta*d->B.beta);
+	alpha.s[1]= cimag(d->A.beta*d->B.beta);
+	beta.s[0] = creal(d->C.beta);
+	beta.s[1] = cimag(d->C.beta); */
   }
 #else
   alpha = d->A.beta*d->B.beta;
@@ -201,7 +160,7 @@ void *basic_mul_computation_gpugemm(void *arg) {
     printf("GPU %d  Alpha %f  Beta  %f \n",d->C.gpu, alpha,  beta);
     
   }
-#endif
+#endif  
 
 #if(ROW_MAJOR)
   err = GEMMCL(
