@@ -185,9 +185,9 @@ int main() {
 #endif
 
 
-  printf("Size %d float %d double %d complex %d z-complex %d cpu_set_t %d \n", \
+  printf("Size %d float %d double %d complex %d z-complex %d cpu_set_t %d long %d int %d short %d\n", \
 	 sizeof(Mat), sizeof(float),sizeof(double), sizeof(float complex) , sizeof(double complex),
-	 sizeof(cpu_set_t));
+	 sizeof(cpu_set_t), sizeof(long),sizeof(int), sizeof(short));
   
   printf("<a.m,a.n,b.m,b.n> ?\n");
   scanf("%d %d %d %d", &a.M,&a.N,&b.M,&b.N);
@@ -285,6 +285,7 @@ int main() {
 
 #if(CLBLAS||FPGA)
   {
+    printf(" size_t %d\n", sizeof(size_t));
     int platform=0;
     printf("platform ->");
     scanf("%d",&platform);
@@ -633,7 +634,8 @@ int main() {
 #endif
 
 #ifdef CLBLAS
-  release_blas_context();
+  relase_devices_names();
+  //release_blas_context();
 #endif
 #ifdef MYSCHED
   

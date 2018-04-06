@@ -34,7 +34,7 @@ AR = ar rcs
 
 ## Machine Specific optimizations 
 #OPT =   $(EXTRA) $(MACROS)   -g  #-std=gnu99 -fPIC -O2  -Wall -msse3       # -m64
-OPT =   $(EXTRA) $(MACROS)  -O2 -msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #-fPIC     # -m64
+OPT =   $(EXTRA) $(MACROS)  -O1 -g #-fPIC -msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #     # -m64
 
 #ARCHITECTUREGPU=/usr/local
 #ARC=Fiji
@@ -46,7 +46,8 @@ ARCHITECTUREGPU= $(D)/CLBlast/
 INC = -I $(HOMEDIR) -I $(ATLAS)/include -I $(HOMEDIR)/Add -I $(HOMEDIR)/Mul \
 	-I $(HOMEDIR)/Matrices -I $(HOMEDIR)/Sort -I $(HOMEDIR)/Scaling \
 	-I $(HOMEDIR)/PThread -I $(HOMEDIR)/Error \
-	-I /opt/rocm/opencl/include/ -I $(ARCHITECTUREGPU)/include -I $(HOMEDIR)/GPU
+	-I $(ARCHITECTUREGPU)/include -I $(HOMEDIR)/GPU \
+	-I /opt/rocm/opencl/include/ 
 
 
 ## Specific directory for ATLAS and GotoBLAS Library
@@ -56,8 +57,8 @@ GLIB = -L $(GOTO_BLAS)
 MKLLIB = -L ${MKL_BLAS}
 ##CLLIBS = -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/  -L $(ARCHITECTUREGPU)/lib64/ #-L /opt/AMDAPPSDK-3.0/lib/x86_64/
 
-CLLIBS =   -L /home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library -L /opt/rocm/opencl/lib/x86_64/
-CLLIBS =   -L $(ARCHITECTUREGPU)/build/   -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ #/opt/rocm/opencl/lib/x86_64/ #
+#CLLIBS =   -L /home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library -L /opt/rocm/opencl/lib/x86_64/
+CLLIBS =   -L $(ARCHITECTUREGPU)/build/   -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ # /opt/rocm/opencl/lib/x86_64/ # #
 
 FPGALIBS = -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64 \
 	-L /home/prj47-rack-31/gemx/lib  \

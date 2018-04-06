@@ -29,8 +29,8 @@ extern int ngpus;
 extern int gpus[DEVICES];
 extern cl_device_id device[DEVICES];
 
-static int DEBUG=0;  
-static int DEBUG2=0;  
+static int DEBUG=1;  
+static int DEBUG2=1;  
 
 /* ********************************************************
  *
@@ -88,20 +88,20 @@ void *basic_mul_computation_gpugemm(void *arg) {
   
   if (DEBUG2) {
     printf("GPU %d \n",d->C.gpu);
-    printf("Name %s GPU %d", bookmarks[gpus[d->C.gpu]].name,d->C.gpu);
+    printf("Name %s GPU %d\n", bookmarks[gpus[d->C.gpu]].name,d->C.gpu);
     //deviceName( &(d->id),d->C.gpu);
   }
   
   if (DEBUG) {
     size_t r;
     cl_int e = clGetMemObjectInfo (d->bufA,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF A size %d %d\n",d->C.gpu,r,e);
+    printf("GPU %d BUF A size %ld M %d %ldM\n",d->C.gpu,r/1024/1024,e,(long)d->A.m*d->A.n*sizeof(Mat)/1024/1024);
     checkErrors(e, "read A",0);
     e = clGetMemObjectInfo (d->bufB,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF B size %d %d \n",d->C.gpu,r,e);
+    printf("GPU %d BUF B size %d %ld M %ldM\n",d->C.gpu,r/1024/1024,e,(long)d->B.m*d->B.n*sizeof(Mat)/1024/1024);
     checkErrors(e, "read B",0);
     e = clGetMemObjectInfo (d->bufC,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF C size %d %d \n",d->C.gpu,r,e);
+    printf("GPU %d BUF C size %d %ld %ldM\n",d->C.gpu,r/1024/1024,e,(long)d->C.m*d->C.n*sizeof(Mat)/1024/1024);
     checkErrors(e, "read C",0);
     printf("GPU %d       A %d x %d %d x %d %c- \n",d->C.gpu,d->A.m, d->A.n,d->A.M,d->A.N, d->A.trans);
     printf("GPU %d       B %d x %d %d x %d %c- \n",d->C.gpu,d->B.m, d->B.n,d->B.M,d->B.N, d->B.trans);
@@ -206,13 +206,13 @@ void *basic_mul_computation_gpugemm(void *arg) {
   if (err != CL_SUCCESS) {
     size_t r;
     cl_int e = clGetMemObjectInfo (d->bufA,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF A size %d %d %d \n",d->C.gpu,r,(d->A.m)*(d->A.n)*sizeof(Mat),e);
+    printf("GPU %d BUF A size %ld M %ld %d \n",d->C.gpu,r/1024/1024,(long)(d->A.m)*(d->A.n)*sizeof(Mat),e);
     checkErrors(e, "read A",0);
     e = clGetMemObjectInfo (d->bufB,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF B size %d %d %d \n",d->C.gpu,r,d->B.m*d->B.n*sizeof(Mat),e);
+    printf("GPU %d BUF B size %ld M %ld %d \n",d->C.gpu,r/1024/1024,(long)d->B.m*d->B.n*sizeof(Mat),e);
     checkErrors(e, "read B",0);
     e = clGetMemObjectInfo (d->bufC,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF C size %d %d %d \n",d->C.gpu,r,d->C.m*d->C.n*sizeof(Mat),e);
+    printf("GPU %d BUF C size %ld M %ld %d \n",d->C.gpu,r/1024/1024,(long)d->C.m*d->C.n*sizeof(Mat),e);
     
 #if(ROW_MAJOR)
     printf("GPU %d Row Major and order %d %d %d \n",d->C.gpu,order,
@@ -285,11 +285,11 @@ static inline int TEMPLATE(DEF(C),DEF(A), DEF(B),int ngpus, int *gpus) {
   }
 #if(COLUMN_MAJOR)						
   NN = shapes(gpus[0],gpus[ngpus-1],C.m,DEVICES, weights,sizes,indexes); 
-  if (DEBUG) printf("GPU %d QUEUE CM %d \n ",gpus[0], NN);				
+  if (1 || DEBUG) printf("GPU %d QUEUE CM %d \n",gpus[0], NN);				
   QUEUEIT(1,NN,NN);							
 #elif(ROW_MAJOR)							
-  NN = shapes(gpus[0],gpus[ngpus-1],C.n,DEVICES, weights,sizes,indexes); 
-  if (DEBUG) printf("GPU %d QUEUE RM %d \n ",gpus[0], NN);				
+  NN = shapes(gpus[0],gpus[ngpus-1],C.n,DEVICES, weights,sizes,indexes);  
+  if (1 || DEBUG) printf("GPU %d QUEUE RM %d \n",gpus[0], NN);				
   QUEUEIT((NN),(1),(NN));							
 #endif								
 									
@@ -356,7 +356,7 @@ static inline int TEMPLATE(DEF(C),DEF(A), DEF(B),int ngpus, int *gpus) {
     for (j=0; j<NN;j++) 
       basic_mul_computation_gpugemm((void *)(&d[j]));
   }
-  if (DEBUG) printf("GPU %d Wait and release \n ",gpus[0]);
+  if (1 || DEBUG) printf("GPU %d Wait and release \n ",gpus[0]);
   WAIT_AND_RELEASE;
 
   if (DEBUG) printf("GPU %d done\n",gpus[0]);

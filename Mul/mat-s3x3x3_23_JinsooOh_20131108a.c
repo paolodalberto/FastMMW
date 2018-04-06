@@ -394,6 +394,13 @@ int generate_queue(Matrix C, Matrix A, Matrix B,
     FREE(As[i].data);
     FREE(Bs[i].data);
   }
+  free(products);
+  free(Badd);
+  free(Aadd);
+  free(Bs);
+  free(As);
+  free(Cs);
+  free(Ps);
   return 0;
 }
       
