@@ -34,7 +34,7 @@ AR = ar rcs
 
 ## Machine Specific optimizations 
 #OPT =   $(EXTRA) $(MACROS)   -g  #-std=gnu99 -fPIC -O2  -Wall -msse3       # -m64
-OPT =   $(EXTRA) $(MACROS)  -O1 -g #-fPIC -msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #     # -m64
+OPT =   $(EXTRA) $(MACROS)  -O1 -g -fPIC #-msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #     # -m64
 
 #ARCHITECTUREGPU=/usr/local
 #ARC=Fiji
@@ -60,16 +60,18 @@ MKLLIB = -L ${MKL_BLAS}
 #CLLIBS =   -L /home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library -L /opt/rocm/opencl/lib/x86_64/
 CLLIBS =   -L $(ARCHITECTUREGPU)/build/   -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ # /opt/rocm/opencl/lib/x86_64/ # #
 
-FPGALIBS = -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64 \
+FPGALIBS =  \
 	-L /home/prj47-rack-31/gemx/lib  \
 	-L$(ARCHITECTUREGPU)/build/ \
-	-L /opt/amdgpu-pro/lib/x86_64-linux-gnu/
+	-L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64
+
+#	-L /opt/AMDAPPSDK-3.0/lib/x86_64/ #	
 
 
-opencllibs =  -l OpenCL -l clBLAS -lpthread
+#opencllibs =  -l OpenCL -l clBLAS -lpthread
 opencllibs =  -l OpenCL -l clblast -lpthread
 
-fpgalibs =  -l gemxhost -lpthread -l clblast -l xilinxopencl -l OpenCL
+fpgalibs =  -l OpenCL  -l gemxhost -lpthread -l clblast -l xilinxopencl   
 
 
 ## Libraries 
@@ -339,7 +341,7 @@ gotos7: EXTRA_GOTO=-DCLBLAS
 gotos7: MACROS+=-DLIBRARY_PACKAGE
 gotos7:$(objgpu)
 	$(CC) -c $(OPT) -DM7_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
-	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos7 $(math)  $(CLLIBS) $(opencllibs) #$(ALIB) $(atlaslib) #$(GLIB) $(gotolib) #$(ALIB) $(atlaslib)
+	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos7 $(math)  $(CLLIBS) $(opencllibs) 
 
 gotos7p: EXTRA_GOTO=-DFPGA -DCLBLAS 
 gotos7p: MACROS+=-DLIBRARY_PACKAGE

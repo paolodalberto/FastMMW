@@ -29,8 +29,8 @@ extern int ngpus;
 extern int gpus[DEVICES];
 extern cl_device_id device[DEVICES];
 
-static int DEBUG=1;  
-static int DEBUG2=1;  
+static int DEBUG=0;  
+static int DEBUG2=0;  
 
 /* ********************************************************
  *
