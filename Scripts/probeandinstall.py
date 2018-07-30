@@ -27,9 +27,8 @@ Macro = [
     '-DSINGLE_COMPLEX','-DDOUBLE_COMPLEX'
 ]
 NSIZE = [10000, 10000,10000,5000]
-steps = 8 # number of cores
-unrolling = [1,2, 4
-             ,8,16
+steps = 4 # number of cores
+unrolling = [1,2, 4,8,16
 ]
 
 blas = 'GotoBLAS'

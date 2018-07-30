@@ -1,7 +1,8 @@
 
 #Q = read.csv("results.gpus.slot3.txt",sep=",")
-Q = read.csv("results.2.txt",sep=",")
-Q = read.csv("gpuredo.txt",sep=",")
+#Q = read.csv("results.2.txt",sep=",")
+#Q = read.csv("gpuredo.txt",sep=",")
+Q = read.csv("result.trnosmt.txt",sep=",")
 
 Types = unique(Q$TYPE)
 
@@ -37,7 +38,7 @@ for (T in Types) {
         lines(w$SIZE, w$HOT, col=C[i])
         i = i +1
     }
-    legend("bottomleft", legend=algs,col=C,lwd=3)
+    legend("topleft", legend=algs,col=C,lwd=3)
     
     if (FILE) dev.off()
     else X11()
