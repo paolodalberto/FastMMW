@@ -3,7 +3,7 @@
 #set -x
 
 export ARC=Fiji
-export ARCHITECTURE=../../CLBlast/gpupro
+export ARCHITECTURE=../CLBlast/build
 export LD_LIBRARY_PATH=/opt/amdgpu-pro/lib/x86_64-linux-gnu/:${ARCHITECTURE}
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../OpenBLAS/install/lib;
 #export LD_LIBRARY_PATH=/opt/rocm/opencl/lib/x86_64/:/home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library/
@@ -84,35 +84,39 @@ function execute21_2 {
 
 echo "Half" 
 #execute45 Half   0 1 0
-#execute45 Half   0 2 0
+#execute40 Half   0 2 0
 #execute45 Half   2 4 0
-execute45 Half   3 4 0
-execute45 Half   0 4 0
+#execute45 Half   3 4 0
+#execute45 Half   0 4 0
 
-exit 
+#exit 
 echo "Single" 
+#execute40 Single   0 1 0
 execute40 Single   0 2 0
-execute40 Single   0 4 0
-execute40 Single   2 4 0
+#execute40 Single   0 4 0
+#execute40 Single   2 4 0
 
 
 
 echo "Double Complex"
-execute21 DComplex 0 2 0
-execute21 DComplex 0 4 0
-execute21 DComplex 2 4 0
+#execute21 DComplex 0 1 0
+execute40 DComplex 0 2 0
+#execute21 DComplex 0 4 0
+#execute21 DComplex 2 4 0
 
 
 
 echo "Double"
-execute30 Double   0 2 0
-execute30 Double   0 4 0
-execute30 Double   2 4 0
+#execute40 Double   0 1 0
+execute40 Double   0 2 0
+#execute30 Double   0 4 0
+#execute30 Double   2 4 0
 
 
 echo "Single Complex"
-execute30 SComplex 0 2 0
-execute30 SComplex 0 4 0
-execute30 SComplex 2 4 0
+#execute30 SComplex 0 1 0
+execute40 SComplex 0 2 0
+#execute30 SComplex 0 4 0
+#execute30 SComplex 2 4 0
 
 

@@ -17,49 +17,6 @@
 #include <gpuCompute.h>
 
   
-#if(SINGLE_PRECISION)
-#define DATATYPE cl_float
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(DOUBLE_PRECISION)
-#define DATATYPE cl_double
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(SINGLE_COMPLEX)
-#define DATATYPE FloatComplex
-static const DATATYPE            alpha_zero = { 0.0, 0.0};  
-static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
-static const DATATYPE            beta  = {1.0, 1.0 };
-#elif(DOUBLE_COMPLEX)
-#define DATATYPE DoubleComplex
-static const DATATYPE            alpha_zero = { 0.0, 0.0};  
-static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
-static const DATATYPE            beta  = {1.0, 1.0 };
-#endif
-
-
-#if(AMDCLBLAS)
-#if(COLUMN_MAJOR)
-static const clAmdBlasOrder     order  = clAmdBlasColumnMajor;
-#elif(ROW_MAJOR)
-static const clAmdBlasOrder     order  = clAmdBlasRowMajor;
-#endif
-
-static const clAmdBlasTranspose transA   = clAmdBlasTrans;
-static const clAmdBlasTranspose notransA = clAmdBlasNoTrans;
-#else
-#if(COLUMN_MAJOR)
-static const int     order  = CLBlastLayoutColumnMajor,;
-#elif(ROW_MAJOR)
-static const int     order  = CLBlastLayoutRowMajor;
-#endif
-
-static const int notransA = CLBlastTransposeNo;
-static const int transA   = CLBlastTransposeYes;
-
-#endif
 
 
 
@@ -141,11 +98,11 @@ int  set_platform_and_devices(int platform) {
 
     // devices per platform
     
-    err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, DEVICES, device + d, &k);
+    err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, DEVICES-d, device + d, &k);
     if (err != CL_SUCCESS) {
       GPU=0;
       printf( "clGetDeviceIDs() failed with %d\n", err );
-      err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ACCELERATOR, DEVICES, device + d, &k);
+      err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ACCELERATOR, DEVICES-d, device + d, &k);
       if (err != CL_SUCCESS) {
 	checkErrors(err,"clGetDeviceIDs",10);
 	printf( "clGetDeviceIDs() failed with %d\n", err );
@@ -162,9 +119,10 @@ int  set_platform_and_devices(int platform) {
     
     // context per platform
     props[1] = (cl_context_properties)platforms[i];
-    printf(" context %i  %d at %d %d=%d \n", i, k,d,props[1],CL_CONTEXT_PLATFORM);
+    printf(" context %i  %d at %d %d=%d GPU=%d \n", i, k,d,props[1],CL_CONTEXT_PLATFORM,GPU);
     //ctxs[i] = clCreateContext(props, k , device+d, NULL, NULL, &err);
     ctxs[i] = clCreateContextFromType(props, (GPU)?CL_DEVICE_TYPE_GPU:CL_DEVICE_TYPE_ACCELERATOR,NULL, NULL, &err);
+    printf(" <> counts %d \n", counts);
     if (err != CL_SUCCESS) {
       checkErrors(err,"create context",158);
       printf( "clCreateContext() failed with %d\n", err );
@@ -180,8 +138,6 @@ int  set_platform_and_devices(int platform) {
 	cl_int err ;
 	printf(" counts %d \n", counts);
 	err = clGetDeviceInfo(device[d+m], CL_DEVICE_GLOBAL_MEM_SIZE,sizeof(buf_ulong), &buf_ulong, NULL);
-
-	
 	switch (err) {
 	case CL_INVALID_DEVICE:
 	  printf(" CL_INVALID_DEVICE\n");
@@ -201,10 +157,26 @@ int  set_platform_and_devices(int platform) {
 	bookmarks[counts].device =  device +d+m ;
 	bookmarks[counts].i =  counts ;
 	
-	clGetDeviceInfo(device[m+d], CL_DEVICE_NAME, 0, NULL, &valueSize);
+	err = clGetDeviceInfo(device[m+d], CL_DEVICE_NAME, 0, NULL, &valueSize);
+	switch (err) {
+	case CL_INVALID_DEVICE:
+	  printf(" CL_INVALID_DEVICE\n");
+	case CL_INVALID_VALUE:
+	  printf(" CL_INVALID_VALUE\n");
+	case CL_SUCCESS:
+	  break;
+	}
 	bookmarks[counts].name = (char*) malloc(valueSize);
-	clGetDeviceInfo(device[m], CL_DEVICE_NAME, valueSize, bookmarks[counts].name, NULL);
-	printf(" Name %s \n", bookmarks[counts].name); 
+	err = clGetDeviceInfo(device[m+d], CL_DEVICE_NAME, valueSize, bookmarks[counts].name, NULL);
+	switch (err) {
+	case CL_INVALID_DEVICE:
+	  printf(" CL_INVALID_DEVICE\n");
+	case CL_INVALID_VALUE:
+	  printf(" CL_INVALID_VALUE\n");
+	case CL_SUCCESS:
+	  break;
+	}
+	printf(" %d Name %s \n", valueSize,bookmarks[counts].name); 
 
 	bookmarks[counts].size = _sizes[counts] ;
 	bookmarks[counts].gpu = counts;
@@ -232,6 +204,56 @@ int  set_platform_and_devices(int platform) {
     
     return 1;
   }
+  
+  return 0;
+}
+int  relase_devices_names() {
+  char* info;
+  size_t infoSize;
+  const char* attributeNames[5] = { "Name", "Vendor",
+				    "Version", "Profile", "Extensions" };
+  const cl_platform_info attributeTypes[5] = { CL_PLATFORM_NAME, CL_PLATFORM_VENDOR,
+					       CL_PLATFORM_VERSION, CL_PLATFORM_PROFILE, CL_PLATFORM_EXTENSIONS };
+  const int attributeCount = sizeof(attributeNames) / sizeof(char*);
+  int i,j,d,k;
+  cl_int err;
+  int counts=0;
+  
+
+  /* we have platforms */
+  
+  
+  d=0;
+  for (i = 0; i < platformCount; i++) {
+    err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, DEVICES, device + d, &k);
+    if (err != CL_SUCCESS) {
+      printf( "clGetDeviceIDs() failed with %d\n", err );
+      err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ACCELERATOR, DEVICES, device + d, &k);
+      if (err != CL_SUCCESS) {
+	checkErrors(err,"clGetDeviceIDs",10);
+	printf( "clGetDeviceIDs() failed with %d\n", err );
+	return 1;
+      }
+    }
+    for ( int m=0; m<k; m++) { // for each device in this platform
+      {
+	free(bookmarks[counts].name);
+	counts +=1;
+      }
+    }
+
+    d += k;
+    
+  }
+  
+  
+  
+
+  //err = clAmdBlasSetup();
+  free(ctxs);
+  free(platforms);
+
+  
   
   return 0;
 }

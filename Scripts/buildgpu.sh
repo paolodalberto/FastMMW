@@ -10,9 +10,9 @@ do
     #echo /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=30000"   TYPE=Single UNROLL=2
     /usr/bin/make clean add-gen ${n} MACROS="-DHALF_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=40000"   TYPE=Half UNROLL=2 > out1 2>&1
     /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=30000"   TYPE=Single UNROLL=2 > out1 2>&1
-   # /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=25000"   TYPE=Double UNROLL=2 > out2 2>&1
-   # /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=25000"   TYPE=SComplex UNROLL=8 > out3 2>&1
-   # /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=17000"   TYPE=DComplex UNROLL=16 > out4 2>&1
+    /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=25000"   TYPE=Double UNROLL=2 > out2 2>&1
+    /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=25000"   TYPE=SComplex UNROLL=8 > out3 2>&1
+    /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=17000"   TYPE=DComplex UNROLL=16 > out4 2>&1
 done 
 
 

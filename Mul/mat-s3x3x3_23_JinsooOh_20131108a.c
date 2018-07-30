@@ -278,11 +278,11 @@ int generate_queue(Matrix C, Matrix A, Matrix B,
     }
     products[i].pi= 1;
 #if CLBLAS
-    if (DEBUG)  printf("GPU %d  Problem size %d and Memory size %d\n",
-		       Ps[i].gpu,
+    if (DEBUG)  printf("GPU %d %c Problem size %d and Memory size %d\n",
+		       Ps[i].gpu,bookmarks[Ps[i].gpu].name,
 		       sizeof(Mat)*3*Ps[i].M*Ps[i].N/(1024),
 		       bookmarks[Ps[i].gpu].size);
-    if (Ps[i].gpu>=0 && Ps[i].gpu<=3 && sizeof(Mat)*3*Ps[i].M*Ps[i].N/(1024) > bookmarks[Ps[i].gpu].size) { 
+    if (Ps[i].gpu>=0 && Ps[i].gpu<=DEVICES && sizeof(Mat)*3*Ps[i].M*Ps[i].N/(1024) > bookmarks[Ps[i].gpu].size) { 
       if (DEBUG)  printf("%d too big we use wm \n",i);
       products[i].m  = wm ;
     }
@@ -394,6 +394,13 @@ int generate_queue(Matrix C, Matrix A, Matrix B,
     FREE(As[i].data);
     FREE(Bs[i].data);
   }
+  free(products);
+  free(Badd);
+  free(Aadd);
+  free(Bs);
+  free(As);
+  free(Cs);
+  free(Ps);
   return 0;
 }
       

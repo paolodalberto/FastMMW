@@ -20,54 +20,6 @@
 #include <gpuCompute.h>
 
   
-#if(HALF_PRECISION)
-#define DATATYPE cl_half
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(SINGLE_PRECISION)
-#define DATATYPE cl_float
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(DOUBLE_PRECISION)
-#define DATATYPE cl_double
-static const DATATYPE            alpha_zero = 0.0;  
-static const DATATYPE            alpha_one = 1.0;  
-static const DATATYPE            beta  = 1.0;
-#elif(SINGLE_COMPLEX)
-#define DATATYPE FloatComplex
-static const DATATYPE            alpha_zero = { 0.0, 0.0};  
-static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
-static const DATATYPE            beta  = {1.0, 1.0 };
-#elif(DOUBLE_COMPLEX)
-#define DATATYPE DoubleComplex
-static const DATATYPE            alpha_zero = { 0.0, 0.0};  
-static const DATATYPE            alpha_one =  {1.0, 1.1} ;  
-static const DATATYPE            beta  = {1.0, 1.0 };
-#endif
-
-
-#if(AMDCLBLAS)
-#if(COLUMN_MAJOR)
-static const clAmdBlasOrder     order  = clAmdBlasColumnMajor;
-#elif(ROW_MAJOR)
-static const clAmdBlasOrder     order  = clAmdBlasRowMajor;
-#endif
-
-static const clAmdBlasTranspose transA   = clAmdBlasTrans;
-static const clAmdBlasTranspose notransA = clAmdBlasNoTrans;
-#else
-#if(COLUMN_MAJOR)
-static const int     order  = CLBlastLayoutColumnMajor,;
-#elif(ROW_MAJOR)
-static const int     order  = CLBlastLayoutRowMajor;
-#endif
-
-static const int notransA = CLBlastTransposeNo;
-static const int transA   = CLBlastTransposeYes;
-
-#endif
 
 
 
@@ -136,20 +88,20 @@ void *basic_mul_computation_gpugemm(void *arg) {
   
   if (DEBUG2) {
     printf("GPU %d \n",d->C.gpu);
-    printf("Name %s GPU %d", bookmarks[gpus[d->C.gpu]].name,d->C.gpu);
+    printf("Name %s GPU %d\n", bookmarks[gpus[d->C.gpu]].name,d->C.gpu);
     //deviceName( &(d->id),d->C.gpu);
   }
   
   if (DEBUG) {
     size_t r;
     cl_int e = clGetMemObjectInfo (d->bufA,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF A size %d %d\n",d->C.gpu,r,e);
+    printf("GPU %d BUF A size %ld M %d %ldM\n",d->C.gpu,r/1024/1024,e,(long)d->A.m*d->A.n*sizeof(Mat)/1024/1024);
     checkErrors(e, "read A",0);
     e = clGetMemObjectInfo (d->bufB,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF B size %d %d \n",d->C.gpu,r,e);
+    printf("GPU %d BUF B size %d %ld M %ldM\n",d->C.gpu,r/1024/1024,e,(long)d->B.m*d->B.n*sizeof(Mat)/1024/1024);
     checkErrors(e, "read B",0);
     e = clGetMemObjectInfo (d->bufC,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF C size %d %d \n",d->C.gpu,r,e);
+    printf("GPU %d BUF C size %d %ld %ldM\n",d->C.gpu,r/1024/1024,e,(long)d->C.m*d->C.n*sizeof(Mat)/1024/1024);
     checkErrors(e, "read C",0);
     printf("GPU %d       A %d x %d %d x %d %c- \n",d->C.gpu,d->A.m, d->A.n,d->A.M,d->A.N, d->A.trans);
     printf("GPU %d       B %d x %d %d x %d %c- \n",d->C.gpu,d->B.m, d->B.n,d->B.M,d->B.N, d->B.trans);
@@ -182,16 +134,23 @@ void *basic_mul_computation_gpugemm(void *arg) {
   if (DEBUG) printf("GPU %d Sent Data \n",d->C.gpu);
     
   
-
+ 
 #if(SINGLE_COMPLEX || DOUBLE_COMPLEX)  
-  alpha.s[0]= creal(d->A.beta*d->B.beta);
-  alpha.s[1]= cimag(d->A.beta*d->B.beta);
-  beta.s[0] = creal(d->C.beta);
-  beta.s[1] = cimag(d->C.beta);
-  if (DEBUG) {
-    printf("GPU %d Sending  kernel \n",d->C.gpu);
-    printf("GPU %d  Alpha %f %f Beta %f %f \n",d->C.gpu, alpha.s[0], alpha.s[1], beta.s[0], beta.s[1]);
+  if (1) { 
+    DATATYPE al = {creal(d->A.beta*d->B.beta),cimag(d->A.beta*d->B.beta)};
+    DATATYPE bl = {creal(d->C.beta),cimag(d->C.beta)};
+    alpha= al;
+    beta = bl;
     
+    if (DEBUG) {
+      printf("GPU %d Sending  kernel \n",d->C.gpu);
+      printf("GPU %d  Alpha %f %f Beta %f %f \n",d->C.gpu, alpha.s[0], alpha.s[1], beta.s[0], beta.s[1]);
+      
+    }
+    /*  alpha.s[0]= creal(d->A.beta*d->B.beta);
+	alpha.s[1]= cimag(d->A.beta*d->B.beta);
+	beta.s[0] = creal(d->C.beta);
+	beta.s[1] = cimag(d->C.beta); */
   }
 #else
   alpha = d->A.beta*d->B.beta;
@@ -201,7 +160,7 @@ void *basic_mul_computation_gpugemm(void *arg) {
     printf("GPU %d  Alpha %f  Beta  %f \n",d->C.gpu, alpha,  beta);
     
   }
-#endif
+#endif  
 
 #if(ROW_MAJOR)
   err = GEMMCL(
@@ -247,13 +206,13 @@ void *basic_mul_computation_gpugemm(void *arg) {
   if (err != CL_SUCCESS) {
     size_t r;
     cl_int e = clGetMemObjectInfo (d->bufA,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF A size %d %d %d \n",d->C.gpu,r,(d->A.m)*(d->A.n)*sizeof(Mat),e);
+    printf("GPU %d BUF A size %ld M %ld %d \n",d->C.gpu,r/1024/1024,(long)(d->A.m)*(d->A.n)*sizeof(Mat),e);
     checkErrors(e, "read A",0);
     e = clGetMemObjectInfo (d->bufB,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF B size %d %d %d \n",d->C.gpu,r,d->B.m*d->B.n*sizeof(Mat),e);
+    printf("GPU %d BUF B size %ld M %ld %d \n",d->C.gpu,r/1024/1024,(long)d->B.m*d->B.n*sizeof(Mat),e);
     checkErrors(e, "read B",0);
     e = clGetMemObjectInfo (d->bufC,CL_MEM_SIZE,sizeof(r),&r,NULL);
-    printf("GPU %d BUF C size %d %d %d \n",d->C.gpu,r,d->C.m*d->C.n*sizeof(Mat),e);
+    printf("GPU %d BUF C size %ld M %ld %d \n",d->C.gpu,r/1024/1024,(long)d->C.m*d->C.n*sizeof(Mat),e);
     
 #if(ROW_MAJOR)
     printf("GPU %d Row Major and order %d %d %d \n",d->C.gpu,order,
@@ -326,11 +285,11 @@ static inline int TEMPLATE(DEF(C),DEF(A), DEF(B),int ngpus, int *gpus) {
   }
 #if(COLUMN_MAJOR)						
   NN = shapes(gpus[0],gpus[ngpus-1],C.m,DEVICES, weights,sizes,indexes); 
-  if (DEBUG) printf("GPU %d QUEUE CM %d \n ",gpus[0], NN);				
+  if (1 || DEBUG) printf("GPU %d QUEUE CM %d \n",gpus[0], NN);				
   QUEUEIT(1,NN,NN);							
 #elif(ROW_MAJOR)							
-  NN = shapes(gpus[0],gpus[ngpus-1],C.n,DEVICES, weights,sizes,indexes); 
-  if (DEBUG) printf("GPU %d QUEUE RM %d \n ",gpus[0], NN);				
+  NN = shapes(gpus[0],gpus[ngpus-1],C.n,DEVICES, weights,sizes,indexes);  
+  if (1 || DEBUG) printf("GPU %d QUEUE RM %d \n",gpus[0], NN);				
   QUEUEIT((NN),(1),(NN));							
 #endif								
 									
@@ -397,7 +356,7 @@ static inline int TEMPLATE(DEF(C),DEF(A), DEF(B),int ngpus, int *gpus) {
     for (j=0; j<NN;j++) 
       basic_mul_computation_gpugemm((void *)(&d[j]));
   }
-  if (DEBUG) printf("GPU %d Wait and release \n ",gpus[0]);
+  if (1 || DEBUG) printf("GPU %d Wait and release \n ",gpus[0]);
   WAIT_AND_RELEASE;
 
   if (DEBUG) printf("GPU %d done\n",gpus[0]);
