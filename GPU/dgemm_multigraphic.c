@@ -285,11 +285,11 @@ static inline int TEMPLATE(DEF(C),DEF(A), DEF(B),int ngpus, int *gpus) {
   }
 #if(COLUMN_MAJOR)						
   NN = shapes(gpus[0],gpus[ngpus-1],C.m,DEVICES, weights,sizes,indexes); 
-  if (1 || DEBUG) printf("GPU %d QUEUE CM %d \n",gpus[0], NN);				
+  if (DEBUG) printf("GPU %d QUEUE CM %d \n",gpus[0], NN);				
   QUEUEIT(1,NN,NN);							
 #elif(ROW_MAJOR)							
   NN = shapes(gpus[0],gpus[ngpus-1],C.n,DEVICES, weights,sizes,indexes);  
-  if (1 || DEBUG) printf("GPU %d QUEUE RM %d \n",gpus[0], NN);				
+  if (DEBUG) printf("GPU %d QUEUE RM %d \n",gpus[0], NN);				
   QUEUEIT((NN),(1),(NN));							
 #endif								
 									
@@ -356,7 +356,7 @@ static inline int TEMPLATE(DEF(C),DEF(A), DEF(B),int ngpus, int *gpus) {
     for (j=0; j<NN;j++) 
       basic_mul_computation_gpugemm((void *)(&d[j]));
   }
-  if (1 || DEBUG) printf("GPU %d Wait and release \n ",gpus[0]);
+  if (DEBUG) printf("GPU %d Wait and release \n ",gpus[0]);
   WAIT_AND_RELEASE;
 
   if (DEBUG) printf("GPU %d done\n",gpus[0]);

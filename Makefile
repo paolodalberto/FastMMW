@@ -40,13 +40,13 @@ OPT =   $(EXTRA) $(MACROS)  -O1 -g -fPIC #-msse2 -msse4 -m64  #-mtune=zen #-m64 
 #ARC=Fiji
 #ARCHITECTUREGPU= /home/paolo/Desktop/OpenCL3/clBLAS-2.10.0-${ARC}-Linux-x64-CL2.0
 
-ARCHITECTUREGPU= $(D)/CLBlast/
+ARCHITECTUREGPU= $(D)/../CLBlast/rocm
 
 # Includes
 INC = -I $(HOMEDIR) -I $(ATLAS)/include -I $(HOMEDIR)/Add -I $(HOMEDIR)/Mul \
 	-I $(HOMEDIR)/Matrices -I $(HOMEDIR)/Sort -I $(HOMEDIR)/Scaling \
 	-I $(HOMEDIR)/PThread -I $(HOMEDIR)/Error \
-	-I $(ARCHITECTUREGPU)/include -I $(HOMEDIR)/GPU \
+	-I $(ARCHITECTUREGPU)/../include -I $(HOMEDIR)/GPU  -I $(HOMEDIR)/C-Thread-Pool/ \
 	-I /opt/rocm/opencl/include/ 
 
 
@@ -58,12 +58,12 @@ MKLLIB = -L ${MKL_BLAS}
 ##CLLIBS = -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/  -L $(ARCHITECTUREGPU)/lib64/ #-L /opt/AMDAPPSDK-3.0/lib/x86_64/
 
 #CLLIBS =   -L /home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library -L /opt/rocm/opencl/lib/x86_64/
-CLLIBS =   -L $(ARCHITECTUREGPU)/build/   -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ # /opt/rocm/opencl/lib/x86_64/ # #
+CLLIBS =   -L $(ARCHITECTUREGPU)/   -L /opt/rocm/opencl/lib/x86_64/ # /opt/rocm/opencl/lib/x86_64/ # #
 
 FPGALIBS =  \
 	-L /home/prj47-rack-31/gemx/lib  \
-	-L$(ARCHITECTUREGPU)/build/ \
-	-L /opt/amdgpu-pro/lib/x86_64-linux-gnu/ -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64
+	-L$(ARCHITECTUREGPU)/ \
+	-L /opt/rocm/opencl/lib/x86_64/ -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64
 
 #	-L /opt/AMDAPPSDK-3.0/lib/x86_64/ #	
 
@@ -112,7 +112,7 @@ code:
 	tar zcvf fmm.tar.gz  ../fmm/Makefile ../fmm/Add/*.c ../fmm/Add/*.h  \
 	../fmm/Mul/*.c ../fmm/Mul/*.h   ../fmm/Matrices/*.h  \
 	../fmm/Sort/*.c ../fmm/Sort/*.h  ../fmm/Scaling/*.c ../fmm/Scaling/*.h  \
-	../fmm/PThread/*.c  ../fmm/PThread/*.h  \
+	../fmm/PThread/*.c  ../fmm/PThread/*.h   \
 	../fmm/Error/*.c ../fmm/Error/*.h  ../fmm/MAT-ADD-Generator \
 	../fmm/Examples/*.c ../fmm/Examples/*.h   ../fmm/Mixed/*.c  ../fmm/Mixed/*.h ../fmm/COPYING.LESSER ../fmm/INSTALL.txt \
 	 ../fmm/Scripts ../fmm/lib ../fmm/R/FastMMWR ../fmm/Python ../fmm/GPU
@@ -122,8 +122,8 @@ code:
 ## defaults object files
 
 obj = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o 
-objgpu = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o GPU/dgemm_multigraphic.o GPU/platform.o  Mul/mat-s3x3x3_23_JinsooOh_20131108a.o
-objfpga = ${objgpu} FPGA/fpga.o
+objgpu = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o GPU/dgemm_multigraphic.o GPU/platform.o  Mul/mat-s3x3x3_23_JinsooOh_20131108a.o Mul/mat-s3x3x3_23_JinsooOh_20131108a-threads.o C-Thread-Pool/thpool.o 
+objfpga = ${objgpu} FPGA/fpga.o 
 obj2 = $(obj) Error/doubly_compensated_sumc.o Sort/quicksort.o 
 
 UNROLL = 8

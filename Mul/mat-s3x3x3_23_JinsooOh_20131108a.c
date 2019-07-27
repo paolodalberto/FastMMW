@@ -174,6 +174,8 @@ extern  DeviceBookmark bookmarks[4];
 		      
 
 
+
+
 int generate_queue(Matrix C, Matrix A, Matrix B,
 		   int *gpus, int ngpus, int base,
 		   float *ALPHA, float *BETA, float *GAMMA,
@@ -403,7 +405,10 @@ int generate_queue(Matrix C, Matrix A, Matrix B,
   free(Ps);
   return 0;
 }
-      
+
+
+
+
 
 
  

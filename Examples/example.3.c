@@ -408,8 +408,9 @@ int main() {
     printf("%d %d \n", left,right); 
   }
 #else
-  {
+  { 
     scanf("%d",&c.gpu);
+    scanf("%d",&right);
     if (ngpus == 1 || c.gpu != -1) {
       printf("GPU: %d\n", c.gpu); 
     }
@@ -424,21 +425,21 @@ int main() {
 #ifdef M7_TEST
   
   TIMING_COLD({					\
-      generate_queue(c,a,b,intgpus,right,2,_alpha2,_beta2,_gamma2,PP);
+      generate_queue_threads(c,a,b,intgpus,right,2,_alpha2,_beta2,_gamma2,PP);
     }						\
     ,time_mul,MULINTERVAL);
 #endif  
 #ifdef M23_TEST
   
   TIMING_COLD({					\
-      generate_queue(c,a,b,intgpus,right,3,_alpha3,_beta3,_gamma3,PP);
+      generate_queue_threads(c,a,b,intgpus,right,3,_alpha3,_beta3,_gamma3,PP);
     }						\
     ,time_mul,MULINTERVAL);
 #endif  
 #ifdef M49_TEST
   
   TIMING_COLD({					\
-      generate_queue(c,a,b,intgpus,right,4,_alpha4,_beta4,_gamma4,PP);
+      generate_queue_threads(c,a,b,intgpus,right,4,_alpha4,_beta4,_gamma4,PP);
     }						\
     ,time_mul,MULINTERVAL);
 #endif
@@ -446,19 +447,29 @@ int main() {
 #ifdef M99_TEST
   
   TIMING_COLD({					\
-      generate_queue(c,a,b,intgpus,right,5,_alpha5,_beta5,_gamma5,PP);
+      generate_queue_threads(c,a,b,intgpus,right,5,_alpha5,_beta5,_gamma5,PP);
     }						\
     ,time_mul,MULINTERVAL);
 #endif  
 #ifdef M343_TEST
   
   TIMING_COLD({					\
-      generate_queue(c,a,b,intgpus,right,8,_alpha8,_beta8,_gamma8,PP);
+      generate_queue_threads(c,a,b,intgpus,right,8,_alpha8,_beta8,_gamma8,PP);
     }						\
     ,time_mul,MULINTERVAL);
 #endif  
 #ifdef GOTOS_TEST   
   TIMING_COLD(CMC(c, =, a, mm_leaf_computation, b),time_mul,MULINTERVAL);
+#ifdef CLBLAS
+  { int left = c.gpu;
+    for (int i=left+1; i<right; i++) { 
+      c.gpu=i;
+      printf("TIMING COLD %d\n",i);
+      TIMING_COLD(CMC(c, =, a, mm_leaf_computation, b),time_mul,MULINTERVAL);
+    }
+    c.gpu=left;
+  }
+#endif
 #endif  
 #ifdef RMUL_TEST   
   TIMING_COLD(CMC(c, =, a, Rmul, b),time_mul,MULINTERVAL);
@@ -512,31 +523,31 @@ int main() {
 
 #ifdef M7_TEST
   TIMING_ITER({					\
-      generate_queue(c,a,b,intgpus,right,2,_alpha2,_beta2,_gamma2,PP);
+      generate_queue_threads(c,a,b,intgpus,right,2,_alpha2,_beta2,_gamma2,PP);
     }						\
     ,time_mul,MULINTERVAL,mask);
 #endif  
 #ifdef M23_TEST
   TIMING_ITER({					\
-      generate_queue(c,a,b,intgpus,right,3,_alpha3,_beta3,_gamma3,PP);
+      generate_queue_threads(c,a,b,intgpus,right,3,_alpha3,_beta3,_gamma3,PP);
     }						\
     ,time_mul,MULINTERVAL,mask);
 #endif  
 #ifdef M49_TEST
   TIMING_ITER({					\
-      generate_queue(c,a,b,intgpus,right,4,_alpha4,_beta4,_gamma4,PP);
+      generate_queue_threads(c,a,b,intgpus,right,4,_alpha4,_beta4,_gamma4,PP);
     }						\
     ,time_mul,MULINTERVAL,mask);
 #endif  
 #ifdef M99_TEST
   TIMING_ITER({					\
-      generate_queue(c,a,b,intgpus,right,5,_alpha5,_beta5,_gamma5,PP);
+      generate_queue_threads(c,a,b,intgpus,right,5,_alpha5,_beta5,_gamma5,PP);
     }						\
     ,time_mul,MULINTERVAL,mask);
 #endif  
 #ifdef M343_TEST
   TIMING_ITER({					\
-      generate_queue(c,a,b,intgpus,right,8,_alpha8,_beta8,_gamma8,PP);
+      generate_queue_threads(c,a,b,intgpus,right,8,_alpha8,_beta8,_gamma8,PP);
     }						\
     ,time_mul,MULINTERVAL,mask);
 #endif  
@@ -545,6 +556,28 @@ int main() {
 #endif  
 #ifdef GOTOS_TEST   
   TIMING_ITER(CMC(c, =, a, mm_leaf_computation, b),time_mul,MULINTERVAL, mask);
+#ifdef CLBLAS
+  {
+    if (echo) printf(" Time HOT %e \n", time_mul);
+    ops = ((double)2*c.M)*((double)c.N*(double)((b.trans=='n')?b.M:b.N));
+    printf(" MUL OPS %e", ops);if (echo) printf("\n");
+    mops_mul=(ops/time_mul)/(double)1000000000;
+    printf(" %s OPS %e GFLOPS HOT  %e", program, ops, mops_mul);if (echo) printf("\n");
+
+    int left = c.gpu;
+    for (int i=left+1; i<right; i++) {
+      c.gpu=i;
+      printf("TIMING HOT %d \n",i);
+      TIMING_ITER(CMC(c, =, a, mm_leaf_computation, b),time_mul,MULINTERVAL, mask);
+      if (echo) printf(" Time HOT %e \n", time_mul);
+      ops = ((double)2*c.M)*((double)c.N*(double)((b.trans=='n')?b.M:b.N));
+      printf(" MUL OPS %e", ops);if (echo) printf("\n");
+      mops_mul=(ops/time_mul)/(double)1000000000;
+      printf(" %s OPS %e GFLOPS HOT  %e", program, ops, mops_mul);if (echo) printf("\n");
+    }
+    c.gpu=left;
+  }
+#endif
 #endif  
 #ifdef WM_PIPE_TEST   
   TIMING_ITER(wmpipe(c, a, b,0),time_mul,MULINTERVAL, mask);

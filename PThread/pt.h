@@ -118,6 +118,31 @@ struct operands_addition {
 
 
 
+typedef struct operands_composed TComposedOperands;
+
+typedef void (*Sync)(void *);
+
+struct operands_composed { 
+  int gpu;
+  int step; // step in the winograd computation
+  int P;    // these are related to the shape of the computation  
+  int Q;    // 7, 23, 49
+  int base; //
+  Matrix C; // Original matrices
+  Matrix A;
+  Matrix B;
+  Matrix Ps; // temporary matrices
+  Matrix *Cs; // temporary matrices
+  Matrix As;
+  Matrix Bs;
+  float  *ALPHA; // winograd algorithms as tensors
+  float  *BETA ;
+  float  *GAMMA;
+  Sync sync;
+} ;
+
+
+
 
 
 
