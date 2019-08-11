@@ -72,8 +72,8 @@ int addition_queue(Matrix R,
 		   Matrix A,
 		   float  *rows, int len,
 		   TAddOperands *adds, int ladds,
-		   int base, Matrix *ref
-		   ) {
+		   int base, Matrix *ref,
+		   MatrixComputation Add) {
   int j;
   int count=0;
   int Q = base*base;
@@ -122,15 +122,13 @@ int addition_queue(Matrix R,
 	  i[c++] = k;
       
       adds[l].pi = -11;
-      adds[l].m = ptadd_t;
+      adds[l].m = Add; //_amd; //ptadd_t;
       adds[l].c = R;
       adds[l].a = PQQ(A,i[0],base); 
       adds[l].b = PQQ(A,i[1],base); 
 
-
       dimension(ref,adds[l].a);
       dimension(ref,adds[l].b);
-
 
 #if(SINGLE_PRECISION || DOUBLE_PRECISION)
       adds[l].a.beta = rows[i[0]];
@@ -143,13 +141,11 @@ int addition_queue(Matrix R,
       for (k=0;k<Q && c<count;k++) 
 	if (rows[k] !=0) {
 	  i[c] = k;
-	  
 	  adds[l].pi = -1;
-	  adds[l].m = ptadd_t;
+	  adds[l].m = Add; // add_amd; //ptadd_t;
 	  adds[l].c = R;
 	  adds[l].a = R;
 	  adds[l].b = PQQ(A,i[c],base);
-
 	  dimension(ref,adds[l].b);
 
 #if(SINGLE_PRECISION || DOUBLE_PRECISION)
@@ -169,8 +165,8 @@ int addition_queue(Matrix R,
 
 
 
-extern  int _sizes[4];
-extern  DeviceBookmark bookmarks[4];
+extern  int _sizes[DEVICES];
+extern  DeviceBookmark bookmarks[DEVICES];
 		      
 
 
@@ -327,14 +323,14 @@ int generate_queue(Matrix C, Matrix A, Matrix B,
       int counta = 0;
       int countb = 0;
       
-      counta = addition_queue(As[i],A,ALPHA+(step+i)*Q,Q,Aadd,Q,base,&temp);
+      counta = addition_queue(As[i],A,ALPHA+(step+i)*Q,Q,Aadd,Q,base,&temp, ptadd_t);
       if (DEBUG) printf("length of As  %d\n", counta);
       MatrixComputationsSequential(Aadd,counta);
       As[i].m = temp.m; 
       As[i].n = temp.n;
       temp.m = temp.n = 0;
       
-      countb = addition_queue(Bs[i],B,BETA+(step+i)*Q,Q,Badd,Q,base,&temp);
+      countb = addition_queue(Bs[i],B,BETA+(step+i)*Q,Q,Badd,Q,base,&temp, ptadd_t);
       if (DEBUG) printf("length of Bs  %d\n", countb);
       MatrixComputationsSequential(Badd,countb);
       Bs[i].m = temp.m;

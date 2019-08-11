@@ -8,7 +8,8 @@
 #Q = read.csv("result8x8.txt",sep=",")
 #Q = read.csv("result8x8_0-2.txt",sep=",")
 #Q = read.csv("result.clblast.txt",sep=",")
-Q = read.csv("result.clblast.tuned.txt",sep=",")
+#Q = read.csv("result.clblast.tuned.txt",sep=",")
+Q = read.csv("results.2019-07029.csv",sep=",")
 
 Types = unique(Q$TYPE)
 
@@ -30,22 +31,25 @@ for (T in Types) {
     Single = subset(Q, TYPE==T)
     algs = unique(Single$NAME)
 
-
+    
     algs = algs[grepl("2x",algs)]
     algs = sort(algs)
     
-    
+    print(algs)
+    print(Single)
     Algs =list()
     for (a in algs) {
         Algs[[a]] = subset(Single, NAME==a)
     }
     
     S = unique(Single$SIZE)
-    
-    range = S*0.0 + min(Single$HOT)
-    range[1] = max(Single$HOT)
+    print(c(min(Single$HOT),min(Single$COLD)))
+    range = S*0.0 + min(min(Single$HOT),min(Single$COLD))
+    range[1] = max(max(Single$COLD),max(Single$HOT))
     #C = c("darkblue","blue","turquoise", "darkred", "red", "orange","black")
-
+    print(T)
+    print(range)
+    print(S)
     
     plot(S,range, type='n', col='white', main=T, ylab="GFLOPS", xlab="Size")
 

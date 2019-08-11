@@ -9,9 +9,9 @@
 #Q = read.csv("result8x8_0-2.txt",sep=",")
 #Q = read.csv("TRPNG/result8x8_all.txt",sep=",")
 #Q = read.csv("result8x8_0-4_all_epyc_MI25.txt",sep=",")
-Q = read.csv("result.clblast.txt",sep=",")
+#Q = read.csv("result.clblast.txt",sep=",")
 Q = read.csv("result.clblast.tuned.txt",sep=",")
-
+Q = read.csv("results.2019-07029.csv",sep=",")
 Types = unique(Q$TYPE)
 
 

@@ -23,7 +23,7 @@
 #include <string.h>
 
   
-#define DEVICES    4
+#define DEVICES    5
 #define PLATFORMS  2
 
 /// Assume we can define a gemm function that is specific to the type,
@@ -142,9 +142,9 @@ typedef struct device_structure DeviceBookmark;
   GPUData    d[DEVICES];						\
   cl_command_queue queue[DEVICES];					\
   cl_mem bufA[DEVICES], bufB[DEVICES], bufC[DEVICES];			\
-  int weights[DEVICES] = {1,1,1,1,};					\
-  int sizes[DEVICES]   = {1,1,1,1,};					\
-  int indexes[DEVICES]   = {1,1,1,1,};  				\
+  int weights[DEVICES] = {1,1,1,1,1};					\
+  int sizes[DEVICES]   = {1,1,1,1,1};					\
+  int indexes[DEVICES]   = {1,1,1,1,1};  				\
     {int jj; for (jj=0;jj<DEVICES;jj++) d[jj].skip = 15;}		\
     
 

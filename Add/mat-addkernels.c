@@ -229,111 +229,107 @@ void  print(DEF(c)) {
 
 #ifdef ROW_MAJOR
 
-// C = A + B 
 int add_t(DEF(c), DEF(a), DEF(b)) { 
-
+  
   int i,j,x,y;
 
-   /* minimum sizes */
-   x = min(a.m,b.m); y = min(a.n,b.n);
+  /* minimum sizes */
+  x = min(a.m,b.m); y = min(a.n,b.n);
    
-   //# pragma omp parallel for
-   for (i=0; i<x; i++) {
-     /* core of the computation */
-     for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) + b.beta*E_(b.data,i,j,b.M,b.N);
+  //# pragma omp parallel for
+  for (i=0; i<x; i++) {
+    /* core of the computation */
+    for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) + b.beta*E_(b.data,i,j,b.M,b.N);
 
-     if (y<a.n)	 E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-     else if (y<b.n) E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
-   }
-   /* last row */
-   if (x<a.m)  {/* A is taller than B */
-     for (j=0;j<a.n;j++)  E_(c.data,i,j,c.M,c.N)  = a.beta*E_(a.data,i,j,a.M,a.N);
-   }
-   if (x<b.m)  {/* B is taller than A */
-     for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N);
-   }
-   //   c.beta = 1;
-   return 0;
+    if (c.n>y)
+      /* A is larger than B  or B is otherwise*/
+      if (y<a.n)      for (;j<min(c.n,a.n);j++) E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; 
+      else if (y<b.n) for (;j<min(c.n,b.n);j++) E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+  }
+  
+  if (c.m>x) {
+    /* last rows */
+    if (x<a.m)
+      for (; i<min(c.m,a.m); i++) for (j=0;j<min(a.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
+    
+    else if (x<b.m)  
+      for (; i<min(c.m,b.m); i++) for (j=0;j<min(b.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N);
+    
+  }
+  //   c.beta = 1;
+  return 0;
 }
-// C = A - B 
+
 int sub_t(DEF(c), DEF(a), DEF(b)) { 
 
-  int i,j,x,y;
-
-   /* minimum sizes */
-   x = min(a.m,b.m); y = min(a.n,b.n);
-   //# pragma omp parallel for
-   for (i=0; i<x; i++) {
-     /* core of the computation */
-     for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) - b.beta*E_(b.data,i,j,b.M,b.N);
-
-     if (y<a.n)	 E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-     else if (y<b.n)  E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
-   }
-   /* last row */
-   if (x<a.m)  {/* A is taller than B */
-     for (j=0;j<a.n;j++)   E_(c.data,i,j,c.M,c.N)  = a.beta*E_(a.data,i,j,a.M,a.N);
-   }
-   else 
-     if (x<b.m)  {/* B is taller than A */
-       for (j=0;j<b.n;j++)    E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); 
-       
-     }
-   //c.beta = 1;
-   return 0;
+  DEF(B);
+  B = b;
+  B.beta = - b.beta;
+  return add_t(c,a,B);
 }
-// C = A + B 
+
+
+
 int add(DEF(c), DEF(a), DEF(b)) { 
-
+  
   int i,j,x,y;
 
-   /* minimum sizes */
-   x = min(a.m,b.m); y = min(a.n,b.n);
-   //# pragma omp parallel for
-   for (i=0; i<x; i++) {
-     /* core of the computation */
-     for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) + E_(b.data,i,j,b.M,b.N);
+  /* minimum sizes */
+  x = min(a.m,b.m); y = min(a.n,b.n);
+   
+  //# pragma omp parallel for
+  for (i=0; i<x; i++) {
+    /* core of the computation */
+    for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) + E_(b.data,i,j,b.M,b.N);
 
-     if (y<a.n)	 E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-     else if (y<b.n) E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N); /* B is larger than A */
-   }
-   /* last row */
-   if (x<a.m)  {/* A is taller than B */
-     for (j=0;j<a.n;j++)  E_(c.data,i,j,c.M,c.N)  = E_(a.data,i,j,a.M,a.N);
-   }
-   if (x<b.m)  {/* B is taller than A */
-     for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N);
-   }
-   return 0;
+    if (c.n>y)
+      /* A is larger than B  or B is otherwise*/
+      if (y<a.n)      for (;j<min(c.n,a.n);j++) E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ; 
+      else if (y<b.n) for (;j<min(c.n,b.n);j++) E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+  }
+  
+  if (c.m>x) {
+    /* last rows */
+    if (x<a.m)
+      for (; i<min(c.m,a.m); i++) for (j=0;j<min(a.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
+    
+    else if (x<b.m)  
+      for (; i<min(c.m,b.m); i++) for (j=0;j<min(b.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N);
+    
+  }
+  //   c.beta = 1;
+  return 0;
 }
-// C = A - B 
 int sub(DEF(c), DEF(a), DEF(b)) { 
-
+  
   int i,j,x,y;
 
-   /* minimum sizes */
-   x = min(a.m,b.m); y = min(a.n,b.n);
-   //# pragma omp parallel for
-   for (i=0; i<x; i++) {
-     /* core of the computation */
-     for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) - E_(b.data,i,j,b.M,b.N);
+  /* minimum sizes */
+  x = min(a.m,b.m); y = min(a.n,b.n);
+   
+  //# pragma omp parallel for
+  for (i=0; i<x; i++) {
+    /* core of the computation */
+    for (j=0;j<y;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) - E_(b.data,i,j,b.M,b.N);
 
-     if (y<a.n)	 E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-     else if (y<b.n)  E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); /* B is larger than A */
-   }
-   /* last row */
-   if (x<a.m)  {/* A is taller than B */
-     for (j=0;j<a.n;j++)   E_(c.data,i,j,c.M,c.N)  = E_(a.data,i,j,a.M,a.N);
-   }
-   else 
-     if (x<b.m)  {/* B is taller than A */
-       for (j=0;j<b.n;j++)    E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); 
-       
-     }
-   return 0;
+    if (c.n>y)
+      /* A is larger than B  or B is otherwise*/
+      if (y<a.n)      for (;j<min(c.n,a.n);j++) E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ; 
+      else if (y<b.n) for (;j<min(c.n,b.n);j++) E_(c.data,i,j,c.M,c.N) = -E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+  }
+  
+  if (c.m>x) {
+    /* last rows */
+    if (x<a.m)
+      for (; i<min(c.m,a.m); i++) for (j=0;j<min(a.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
+    
+    else if (x<b.m)  
+      for (; i<min(c.m,b.m); i++) for (j=0;j<min(b.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = -E_(b.data,i,j,b.M,b.N);
+    
+  }
+  //   c.beta = 1;
+  return 0;
 }
-
-
 
 
 
@@ -361,17 +357,20 @@ int add_amd(DEF(c), DEF(a), DEF(b)) {
     
     /* j=y(R) to  y */
     for (;j<y;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) + E_(b.data,i,j,b.M,b.N);
-    
-    if (y<a.n)	 E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-    else if (y<b.n) E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+    if (c.n>y)
+      /* A is larger than B  or B is otherwise*/
+      if (y<a.n)      for (;j<min(c.n,a.n);j++) E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ; 
+      else if (y<b.n) for (;j<min(c.n,b.n);j++) E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N); /* B is larger than A */
   }
-  /* last row */
-  if (x<a.m)  /* A is taller than B */
-    for (j=0;j<a.n;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
-  if (x<b.m)  /* B is taller than A */
-    for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N); 
-  
-  
+  if (c.m>x) {
+    /* last rows */
+    if (x<a.m)
+      for (; i<min(c.m,a.m); i++) for (j=0;j<min(a.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
+    
+    else if (x<b.m)  
+      for (; i<min(c.m,b.m); i++) for (j=0;j<min(b.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N);
+    
+  }
   return 0;
 
 }
@@ -390,16 +389,20 @@ int sub_amd(DEF(c), DEF(a), DEF(b)) {
     
     /* j=y(R) to  y */
     for (;j<y;j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) - E_(b.data,i,j,b.M,b.N);
-    
-    if (y<a.n)	 E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N); /* A is larger than B */
-    else if (y<b.n)  E_(c.data,i,j,c.M,c.N)  = -E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+    if (c.n>y)
+      /* A is larger than B  or B is otherwise*/
+      if (y<a.n)      for (;j<min(c.n,a.n);j++) E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ; 
+      else if (y<b.n) for (;j<min(c.n,b.n);j++) E_(c.data,i,j,c.M,c.N) = -E_(b.data,i,j,b.M,b.N); /* B is larger than A */
   }
-  /* last row */
-  if (x<a.m)  /* A is taller than B */
-    for (j=0;j<a.n;j++)   E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
-  if (x<b.m)  /* B is taller than A */
-    for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N)  = -E_(b.data,i,j,b.M,b.N); 
-  
+  if (c.m>x) {
+    /* last rows */
+    if (x<a.m)
+      for (; i<min(c.m,a.m); i++) for (j=0;j<min(a.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
+    
+    else if (x<b.m)  
+      for (; i<min(c.m,b.m); i++) for (j=0;j<min(b.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = -E_(b.data,i,j,b.M,b.N);
+    
+  }
   return 0;
 
 }
@@ -419,47 +422,31 @@ int add_amd_t(DEF(c), DEF(a), DEF(b)) {
     
     /* j=y(R) to  y */
     for (;j<y;j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) + b.beta*E_(b.data,i,j,b.M,b.N);
-    
-    if (y<a.n)	 E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-    else if (y<b.n) E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+    if (c.n>y)
+      /* A is larger than B  or B is otherwise*/
+      if (y<a.n)      for (;j<min(c.n,a.n);j++) E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; 
+      else if (y<b.n) for (;j<min(c.n,b.n);j++) E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
   }
-  /* last row */
-  if (x<a.m)  /* A is taller than B */
-    for (j=0;j<a.n;j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
-  if (x<b.m)  /* B is taller than A */
-    for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); 
   
-  //c.beta = 1;
+  if (c.m>x) {
+    /* last rows */
+    if (x<a.m)
+      for (; i<min(c.m,a.m); i++) for (j=0;j<min(a.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
+    
+    else if (x<b.m)  
+      for (; i<min(c.m,b.m); i++) for (j=0;j<min(b.n,c.n);j++)  E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N);
+    
+  }
   
   return 0;
      
 }
 int sub_amd_t(DEF(c), DEF(a), DEF(b)) { 
   
-  int i,j,x,y;
-  DEFREGISTERS;
-  /* minimum sizes */
-  x = min(a.m,b.m); y = min(a.n,b.n);
-  //# pragma omp parallel for
-  for (i=0; i<x; i++) {
-    
-    /* j=0 to y-2*UNROLL */
-    UNROLLKERNEL_t(c,a,b,i,j,y,UNLOOPCOMPUTESUB_t);
-    
-    /* j=y(R) to  y */
-    for (;j<y;j++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) - b.beta*E_(b.data,i,j,b.M,b.N);
-    
-    if (y<a.n)	 E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N); /* A is larger than B */
-    else if (y<b.n)  E_(c.data,i,j,c.M,c.N)  = -b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
-  }
-  /* last row */
-  if (x<a.m)  /* A is taller than B */
-    for (j=0;j<a.n;j++)   E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
-  if (x<b.m)  /* B is taller than A */
-    for (j=0;j<b.n;j++)   E_(c.data,i,j,c.M,c.N)  = -b.beta*E_(b.data,i,j,b.M,b.N); 
-  
-  //c.beta = 1;
-  return 0;
+  DEF(B);
+  B = b;
+  B.beta = - b.beta;
+  return add_amd_t(c,a,B);
 
 }
 
@@ -471,7 +458,7 @@ int sub_amd_t(DEF(c), DEF(a), DEF(b)) {
 
 // C = A + B 
 int add(DEF(c), DEF(a), DEF(b)) { 
-
+  print("######### WANING  WRONG CODE \n");
   int i,j,x,y;
 
    /* minimum sizes */
@@ -480,18 +467,20 @@ int add(DEF(c), DEF(a), DEF(b)) {
    /* core of the computation */
    for (j=0;j<y;j++) {
      for (i=0; i<x; i++) E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) + E_(b.data,i,j,b.M,b.N);
-     
-     /* last row */
-     if (x<a.m)  {/* A is taller than B */
+
+     if (c.m>x)
+       /* last row */
+       if (x<a.m)  {/* A is taller than B */
          E_(c.data,i,j,c.M,c.N)  = E_(a.data,i,j,a.M,a.N);
-     }
-     if (x<b.m)  {/* B is taller than A */
-       E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N);
-     }
+       }
+       else if (x<b.m)  {/* B is taller than A */
+	 E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N);
+       }
    }
    // last column
-   if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-   else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+   if (c.n>y)
+     if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
+     else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = E_(b.data,i,j,b.M,b.N); /* B is larger than A */
    return 0;
 }
 // C = A - B 
@@ -506,16 +495,18 @@ int sub(DEF(c), DEF(a), DEF(b)) {
      for (i=0; i<x; i++) E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) - E_(b.data,i,j,b.M,b.N);
      
      /* last row */
-     if (x<a.m)  {/* A is taller than B */
+     if (c.m>x)
+       if (x<a.m)  {/* A is taller than B */
          E_(c.data,i,j,c.M,c.N)  = E_(a.data,i,j,a.M,a.N);
-     }
-     if (x<b.m)  {/* B is taller than A */
-       E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N);
-     }
+       }
+       else if (x<b.m)  {/* B is taller than A */
+	 E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N);
+       }
    }
    // last column
-   if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-   else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+   if (c.n>y)
+     if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
+     else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); /* B is larger than A */
    return 0;
 }
 
@@ -532,16 +523,18 @@ int add_t(DEF(c), DEF(a), DEF(b)) {
      for (i=0; i<x; i++) E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) + b.beta*E_(b.data,i,j,b.M,b.N);
      
      /* last row */
-     if (x<a.m)  {/* A is taller than B */
+     if (c.m>x)
+       if (x<a.m)  {/* A is taller than B */
          E_(c.data,i,j,c.M,c.N)  = a.beta*E_(a.data,i,j,a.M,a.N);
-     }
-     if (x<b.m)  {/* B is taller than A */
-       E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N);
-     }
+       }
+       else if (x<b.m)  {/* B is taller than A */
+	 E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N);
+       }
    }
    // last column
-   if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-   else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+   if (c.n>y)
+     if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
+     else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
    
    //c.beta = 1;
    return 0;
@@ -557,17 +550,19 @@ int sub_t(DEF(c), DEF(a), DEF(b)) {
    for (j=0;j<y;j++) {
      for (i=0; i<x; i++) E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) - b.beta*E_(b.data,i,j,b.M,b.N);
      
-     /* last row */
-     if (x<a.m)  {/* A is taller than B */
+     if (c.m>x)
+       /* last row */
+       if (x<a.m)  {/* A is taller than B */
          E_(c.data,i,j,c.M,c.N)  = a.beta*E_(a.data,i,j,a.M,a.N);
-     }
-     if (x<b.m)  {/* B is taller than A */
-       E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N);
-     }
+       }
+       else if (x<b.m)  {/* B is taller than A */
+	 E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N);
+       }
    }
    // last column
-   if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
-   else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
+   if (c.n>y)
+     if (y<a.n)	for (i=0;i<a.m;i++) E_(c.data,i,j,c.M,c.N) =  a.beta*E_(a.data,i,j,a.M,a.N) ; /* A is larger than B */
+     else if (y<b.n) for (i=0;i<b.m;i++) E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); /* B is larger than A */
  
    //c.beta = 1;
    return 0;
@@ -598,14 +593,16 @@ int add_amd(DEF(c), DEF(a), DEF(b)) {
     /* j=y(R) to  y */
     for (;i<x;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) + E_(b.data,i,j,b.M,b.N);
     
-    if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
-    else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
+    if (c.m>x)
+      if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
+      else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
   }
   /* last COLUMN */
-  if (y<a.n)  /* A is larger than B */
-    for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
-  if (y<b.n)  /* B is larger than A */
-    for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N); 
+  if (c.n>y)
+    if (y<a.n)  /* A is larger than B */
+      for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
+    else if (y<b.n)  /* B is larger than A */
+      for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) =  E_(b.data,i,j,b.M,b.N); 
   
   
   return 0;
@@ -625,14 +622,17 @@ int sub_amd(DEF(c), DEF(a), DEF(b)) {
     /* j=y(R) to  y */
     for (;i<x;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) - E_(b.data,i,j,b.M,b.N);
     
-    if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
-    else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  - E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
+    if (c.m>x)
+      if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
+      else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  - E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
   }
   /* last COLUMN */
-  if (y<a.n)  /* A is larger than B */
-    for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
-  if (y<b.n)  /* B is larger than A */
-    for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); 
+
+  if (c.n>y)
+    if (y<a.n)  /* A is larger than B */
+      for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = E_(a.data,i,j,a.M,a.N);
+    else if (y<b.n)  /* B is larger than A */
+      for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) = - E_(b.data,i,j,b.M,b.N); 
   return 0;
 
 }
@@ -652,15 +652,17 @@ int add_amd_t(DEF(c), DEF(a), DEF(b)) {
     
     /* j=y(R) to  y */
     for (;i<x;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) + b.beta*E_(b.data,i,j,b.M,b.N);
-    
-    if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
-    else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
+    if (c.m>x)
+      if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
+      else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
   }
   /* last COLUMN */
-  if (y<a.n)  /* A is larger than B */
-    for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
-  if (y<b.n)  /* B is larger than A */
-    for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); 
+  if (c.n>y)
+    
+    if (y<a.n)  /* A is larger than B */
+      for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
+    else if (y<b.n)  /* B is larger than A */
+      for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) =  b.beta*E_(b.data,i,j,b.M,b.N); 
   
   //c.beta = 1;  
   return 0;
@@ -679,15 +681,17 @@ int sub_amd_t(DEF(c), DEF(a), DEF(b)) {
         
     /* j=y(R) to  y */
     for (;i<x;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) - b.beta*E_(b.data,i,j,b.M,b.N);
-    
-    if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
-    else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  - b.beta*E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
+    if (c.m>x)
+      
+      if (x<a.m)	 E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N) ;   /* A is taller than B */
+      else if (x<b.m) E_(c.data,i,j,c.M,c.N) =  - b.beta*E_(b.data,i,j,b.M,b.N);  /* B is taller than A */
   }
   /* last COLUMN */
-  if (y<a.n)  /* A is larger than B */
-    for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
-  if (y<b.n)  /* B is larger than A */
-    for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); 
+  if (c.n>y)
+    if (y<a.n)  /* A is larger than B */
+      for (i=0;i<a.m;i++)  E_(c.data,i,j,c.M,c.N) = a.beta*E_(a.data,i,j,a.M,a.N);
+    else if (y<b.n)  /* B is larger than A */
+      for (i=0;i<b.m;i++)   E_(c.data,i,j,c.M,c.N) = - b.beta*E_(b.data,i,j,b.M,b.N); 
   return 0;
 
   //c.beta = 1;

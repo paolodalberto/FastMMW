@@ -521,6 +521,7 @@ int main() {
   mops_mul=(ops/time_mul)/(double)1000000000;
   printf(" %s OPS %e GFLOPS COLD %e", program, ops, mops_mul);if (echo) printf("\n");
 
+  if (1) {
 #ifdef M7_TEST
   TIMING_ITER({					\
       generate_queue_threads(c,a,b,intgpus,right,2,_alpha2,_beta2,_gamma2,PP);
@@ -577,8 +578,10 @@ int main() {
     }
     c.gpu=left;
   }
+
 #endif
 #endif  
+  }
 #ifdef WM_PIPE_TEST   
   TIMING_ITER(wmpipe(c, a, b,0),time_mul,MULINTERVAL, mask);
 #endif  
@@ -624,7 +627,7 @@ int main() {
   printf(" MUL OPS %e", ops);if (echo) printf("\n");
   mops_mul=(ops/time_mul)/(double)1000000000;
   printf(" %s OPS %e GFLOPS HOT  %e", program, ops, mops_mul);if (echo) printf("\n");
-
+  fflush(stdout);
 
 #ifdef ALPHA
   printf("22*pi/alpha = %e\n", (((double)22)*mops_mul)/mops_add);

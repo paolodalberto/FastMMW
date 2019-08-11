@@ -7,6 +7,8 @@
 #include "gpuCompute.h"
 #include <pthread.h>  
 #include "thpool.h"
+#include <sys/resource.h>
+#include <sys/time.h>
 
 #if(CLBLAS||FPGA)
 int GEMMFPGA  (DEF(c), DEF(a), DEF(b));
@@ -52,6 +54,8 @@ product Gamma                        Alpha                        Beta
 static int DEBUG= 0;
 void single_accumulation(void *A);
 void single_product(void *A);
+void single_accumulation_t(void *A);
+void single_accumulation_tt(void *A);
 
 #if CLBLAS
 static const Matrix zero = { 0, 0,0,0,0,0,0};
@@ -77,15 +81,23 @@ addition_queue(
 	       Matrix A,
 	       float  *rows, int len,
 	       TAddOperands *adds, int ladds,
-	       int base, Matrix *ref
-	       );
+	       int base, Matrix *ref,
+	       MatrixComputation add);
 
 
 extern  int _sizes[DEVICES];
 extern  DeviceBookmark bookmarks[DEVICES];
 		      
 
-
+int resource() {
+  struct rusage usage;
+  if (getrusage(RUSAGE_SELF, &usage)==0) {
+    printf(" shared memory  size %ld \n unshared data  size %ld \n unshared stack size %ld\n", usage.ru_ixrss,usage.ru_idrss,usage.ru_isrss);    
+  } 
+  
+  return 0;
+}
+  
 
 
 int
@@ -101,10 +113,21 @@ generate_queue_threads(
   Matrix *As = (Matrix*)calloc(ngpus,sizeof(Matrix));
   Matrix *Bs = (Matrix*)calloc(ngpus,sizeof(Matrix)); 
   TComposedOperands *args = (TComposedOperands* )calloc(P,sizeof(TComposedOperands));
-  threadpool thpool = thpool_init(ngpus);  
+  threadpool thpool = thpool_init(ngpus,gpus);  
   int i=0;
   int step=0;
 
+
+
+  
+  if (DEBUG)  {
+    //resource();
+    printf("Basic Thred C %d x %d %d %d \n",C.m, C.n,C.M, C.N);
+    printf("Basic Thred A %d x %d %d %d \n",A.m, A.n,A.M, A.N);
+    printf("Basic Thred B %d x %d %d %d \n",B.m, B.n,B.M, B.N);
+  }
+
+  
 #if CLBLAS
   Matrix temp = { 'n', 0,0,0,0,0,0};
 #else
@@ -169,29 +192,31 @@ generate_queue_threads(
     args[i].GAMMA = GAMMA;
     args[i].BETA = BETA;
     args[i].ALPHA = ALPHA;
-    args[i].sync = single_accumulation;
+    args[i].sync = single_accumulation_tt;
   }
 
 	 
   for (step=0; step < P;step ++) {
     args[step] = args[step%ngpus];
     args[step].step = step;
-  
     thpool_add_work(thpool, (void*)single_product, (void*) (args + step)); 
 
   }
-  thpool_wait(thpool);
-  thpool_destroy(thpool);
+
+  thpool_wait(thpool);  // finished the computation 
+  
   
   if (DEBUG) {
     printf(" Freeing the temporaries\n");
   }
   // clean up temporaries
-  for (i=0;i<ngpus;i++){
-    FREE(Ps[i].data);
-    FREE(As[i].data);
+  for (i=ngpus-1;i>=0;i--){
     FREE(Bs[i].data);
+    FREE(As[i].data);
+    FREE(Ps[i].data);
   }
+  
+  thpool_destroy(thpool);
   free(args);
   free(Bs);
   free(As);
@@ -223,14 +248,94 @@ void single_accumulation(void *A) {
 	}
 	
 	T.Ps.beta = T.GAMMA[(T.step)*T.Q+j];
-	ptadd_t(T.Cs[j],T.Cs[j],T.Ps);
+	//ptadd_t(T.Cs[j],T.Cs[j],T.Ps);
+	add_amd_t(T.Cs[j],T.Cs[j],T.Ps);
 	
       }
       
   }
 
   if (DEBUG) printf("Step %d is done on GPU %d\n",T.step,T.gpu);
+  
+}
 
+
+
+
+void single_accumulation_t(void *A) {
+  
+  TComposedOperands T = *(TComposedOperands*)A;
+  TAddOperands *adds = (TAddOperands*) calloc(T.Q,sizeof(TAddOperands));
+  int count=-1; 
+  if (DEBUG) printf("ACCUMULATION Step %d is done on GPU %d Q %d\n",T.step,T.gpu,T.Q);
+  
+  for (int j=0;j<T.Q; j++) {
+    if (DEBUG) printf("j = %d \n", j); 
+    if (T.GAMMA[(T.step)*T.Q+j]!=0) { 
+      count++;
+      adds[count].pi = count;
+      adds[count].c = T.Cs[j];
+      
+      if (T.Cs[j].beta ==0) {
+	
+	if (DEBUG) printf("Copy \n"); 
+	adds[count].m = copy_matrix;
+	adds[count].a = T.Ps;
+	adds[count].b = zero;
+	T.Cs[j].beta = 1.0;
+      }
+      else {
+	if (DEBUG) printf("Add \n");
+	
+	adds[count].m = add_amd_t;
+	adds[count].b = T.Ps;
+	adds[count].a = T.Cs[j];
+	adds[count].b.beta = T.GAMMA[(T.step)*T.Q+j];
+      }
+    }
+  }
+  
+  MatrixComputations(adds,count+1);
+  if (DEBUG) printf("Step %d is done on GPU %d\n",T.step,T.gpu);
+  free(adds);
+}
+
+void single_accumulation_tt(void *A) {
+  
+  TComposedOperands T = *(TComposedOperands*)A;
+  TAddOperands *adds = (TAddOperands*) calloc(T.Q,sizeof(TAddOperands));
+  int count=-1; 
+  if (DEBUG) printf("ACCUMULATION Step %d is done on GPU %d Q %d\n",T.step,T.gpu,T.Q);
+  
+  for (int j=0;j<T.Q; j++) {
+    if (DEBUG) printf("j = %d \n", j); 
+    if (T.GAMMA[(T.step)*T.Q+j]!=0) { 
+      count++;
+      adds[count].pi = -1;
+      adds[count].c = T.Cs[j];
+      
+      if (T.Cs[j].beta ==0) {
+	
+	if (DEBUG) printf("Copy \n"); 
+	adds[count].m = copy_matrix;
+	adds[count].a = T.Ps;
+	adds[count].b = zero;
+	T.Cs[j].beta = 1.0;
+      }
+      else {
+	if (DEBUG) printf("Add \n");
+	
+	adds[count].m = ptadd_t;
+	adds[count].b = T.Ps;
+	adds[count].a = T.Cs[j];
+	adds[count].b.beta = T.GAMMA[(T.step)*T.Q+j];
+      }
+    }
+  }
+  
+  MatrixComputationsSequential(adds,count+1);
+  if (DEBUG) printf("Step %d is done on GPU %d\n",T.step,T.gpu);
+  free(adds);
 }
 
 
@@ -268,11 +373,11 @@ void single_product(void *A) {
 #endif
   products.pi= T.gpu;
 #if CLBLAS
-  if ( DEBUG)  printf("GPU %d %s Problem size %d and Memory size %d\n",
+  if (DEBUG)  printf("GPU %d %s Problem size %d and Memory size %d\n",
 		     T.Ps.gpu,bookmarks[T.Ps.gpu].name,
 		     sizeof(Mat)*3*T.Ps.M*T.Ps.N/(1024),
 		     bookmarks[T.Ps.gpu].size);
-  if (T.Ps.gpu>=0 && T.Ps.gpu<=DEVICES && sizeof(Mat)*3*T.Ps.M*T.Ps.N/(1024) > bookmarks[T.Ps.gpu].size) { 
+  if (T.Ps.gpu>=0 && T.Ps.gpu<=DEVICES && sizeof(Mat)*3*T.Ps.M*T.Ps.N/(1024) > bookmarks[T.Ps.gpu].size*0.80) { // this has to be fixed 
     if (DEBUG)  printf("%d too big we use wm \n",T.gpu);
     products.m  = wm ;
   }
@@ -299,14 +404,14 @@ void single_product(void *A) {
   // prep computation
   
       
-  counta = addition_queue(T.As,T.A,T.ALPHA+(T.step)*Q,Q,Aadd,Q,base,&temp);
+  counta = addition_queue(T.As,T.A,T.ALPHA+(T.step)*Q,Q,Aadd,Q,base,&temp,add_amd_t);
   if (DEBUG) printf("length of As  %d\n", counta);
   MatrixComputationsSequential(Aadd,counta);
   T.As.m = temp.m; 
   T.As.n = temp.n;
   temp.m = temp.n = 0;
       
-  countb = addition_queue(T.Bs,T.B,T.BETA+(T.step)*Q,Q,Badd,Q,base,&temp);
+  countb = addition_queue(T.Bs,T.B,T.BETA+(T.step)*Q,Q,Badd,Q,base,&temp,add_amd_t);
   if (DEBUG) printf("length of Bs  %d\n", countb);
   MatrixComputationsSequential(Badd,countb);
   T.Bs.m = temp.m;
@@ -343,8 +448,7 @@ void single_product(void *A) {
   products.m(products.c,products.a,products.b);
   if (DEBUG) printf("done product GPU %d step %d \n",T.gpu, T.step);
   
-  
+  free(Badd);  
   free(Aadd);
-  free(Badd);
 
 }

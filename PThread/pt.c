@@ -47,6 +47,7 @@ static void *basicComputation( void *s) {
   cpu_set_t mask;
 #if CLBLAS
   if (debug){
+      
     printf("Basic pi%d  C %d x %d gpu %d\n",mc.pi,mc.c.m, mc.c.n, mc.c.gpu);
     printf("      A %d x %d gpu %d\n",mc.a.m, mc.a.n, mc.a.gpu);
     printf("      B %d x %d gpu %d\n",mc.b.m, mc.b.n, mc.b.gpu);
@@ -168,7 +169,7 @@ void MatrixComputations(TAddOperands *args, int len)  {
 void MatrixComputationsSequential(TAddOperands *args, int len)  {
   
   int i;
-  
+  if (debug)   printf("MatrixComputationsSequential < %d \n", len);
   for (i = 0; i<len; i++){
     basicComputation((void *)(args+i));
   }
