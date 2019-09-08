@@ -36,9 +36,14 @@
 #include <mat-addkernels.h>
 #include <string.h>
 
+#ifdef ROCMBLAS
+#include <gpuRocmCompute.h>
+#endif
+
 
 #ifdef CLBLAS
 #include <clblast_c.h>
+#include <gpuCompute.h>
 //#include <clAmdBlas.h>
 #endif
 //#include <scaling.h>
@@ -132,14 +137,15 @@ int main() {
   size_t size;
   int num_cpus, cpu;
 #endif
-#ifdef CLBLAS
-  extern int gpus[4];
+#if(CLBLAS||ROCMBLAS)
+  extern int gpus[DEVICES];
   extern int ngpus;
-  extern int _sizes[4];
+  extern int _sizes[DEVICES];
   
   int *intgpus;
+#endif  
   int left, right;
-#endif
+
 #ifdef SCALING
   // If Voltage and frequency Scaling is possible, we initialize the driver
   openCpuScalingDriver();
@@ -203,7 +209,7 @@ int main() {
   a.N = b.M;
 #endif  
 #endif
-#ifdef CLBLAS
+#if(CLBLAS || ROCMBLAS)
   c.gpu = -1; b.gpu = -1; a.gpu =-1;
 #endif
   
@@ -224,7 +230,7 @@ int main() {
 
   printf(" size of the matrix element %d\n", sizeof(Mat));
   printf(" You selected the following problem \n");
-#if CLBLAS
+#if(CLBLAS || ROCMBLAS)
   printf("      A %d x %d gpu %d\n",a.m,a.n,a.gpu);
   printf("      B %d x %d gpu %d\n",b.m,b.n,b.gpu);
   printf(" Thus C %d x %d gpu %d\n",c.m,c.n,c.gpu);
@@ -283,14 +289,20 @@ int main() {
   //print(c);
 
 
-#if(CLBLAS||FPGA)
+#if(CLBLAS||FPGA||ROCMBLAS)
   {
     printf(" size_t %d\n", sizeof(size_t));
     int platform=0;
     printf("platform ->");
     scanf("%d",&platform);
     printf(" %d\n", platform);
+#if(CLBLAS||FPGA)
     set_platform_and_devices(platform);
+#endif
+#if(ROCMBLAS)
+    query_and_set_device_property();
+#endif	
+
   }
 #endif
 
@@ -393,11 +405,9 @@ int main() {
 
 #endif
 
-
-  
-
   printf("\n MUL ... \n");
-#ifdef CLBLAS
+
+#if(CLBLAS||ROCMBLAS)
 #if(M23_TEST || M99_TEST || M343_TEST || M49_TEST || M7_TEST)
   {
 
@@ -411,13 +421,14 @@ int main() {
   { 
     scanf("%d",&c.gpu);
     scanf("%d",&right);
+
+
     if (ngpus == 1 || c.gpu != -1) {
       printf("GPU: %d\n", c.gpu); 
     }
     else {
       printf("GPUs: "); for (int i=0; i< ngpus; i++) printf(" %d", gpus[i]); printf("\n");
     }
-    
   }
   
 #endif
@@ -460,7 +471,7 @@ int main() {
 #endif  
 #ifdef GOTOS_TEST   
   TIMING_COLD(CMC(c, =, a, mm_leaf_computation, b),time_mul,MULINTERVAL);
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
   { int left = c.gpu;
     for (int i=left+1; i<right; i++) { 
       c.gpu=i;
@@ -557,7 +568,7 @@ int main() {
 #endif  
 #ifdef GOTOS_TEST   
   TIMING_ITER(CMC(c, =, a, mm_leaf_computation, b),time_mul,MULINTERVAL, mask);
-#ifdef CLBLAS
+#if(CLBLAS)
   {
     if (echo) printf(" Time HOT %e \n", time_mul);
     ops = ((double)2*c.M)*((double)c.N*(double)((b.trans=='n')?b.M:b.N));

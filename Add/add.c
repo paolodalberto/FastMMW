@@ -2,7 +2,7 @@
    Copyright 2011 Paolo D'Alberto, Marco Bodrato, and Alexandru
    Nicolau
 
-   This file is part of the Fast Matrix Multiply library (FMM).
+`   This file is part of the Fast Matrix Multiply library (FMM).
       
    FMM is free software: you can redistribute it and/or modify it
    under the terms of the GNU Lesser General Public License as

@@ -4,15 +4,21 @@
 #include "pt.h"
 #include <architecture.h>
 #include <mat-mulkernels.h>
+#if(CLBLAS)
 #include "gpuCompute.h"
+#endif
+#if(ROCMBLAS)
+#include <gpuRocmCompute.h>
+#endif
 #include <pthread.h>  
 #include "thpool.h"
 #include <sys/resource.h>
 #include <sys/time.h>
 
-#if(CLBLAS||FPGA)
+#if(ROCMBLAS||CLBLAS||FPGA)
 int GEMMFPGA  (DEF(c), DEF(a), DEF(b));
 int GEMM      (DEF(c), DEF(a), DEF(b));
+int ROCGEMM(DEF(C),DEF(A),DEF(B));
 #endif
 
 
@@ -57,7 +63,7 @@ void single_product(void *A);
 void single_accumulation_t(void *A);
 void single_accumulation_tt(void *A);
 
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
 static const Matrix zero = { 0, 0,0,0,0,0,0};
 #else
 static const Matrix zero = { 0, 0,0,0,0,0};
@@ -86,8 +92,14 @@ addition_queue(
 
 
 extern  int _sizes[DEVICES];
+
+#if(CLBLAS)
 extern  DeviceBookmark bookmarks[DEVICES];
-		      
+#endif
+#if(ROCMBLAS)
+extern  RocmDeviceBookmark bookmarks[DEVICES];
+#endif
+
 
 int resource() {
   struct rusage usage;
@@ -128,7 +140,7 @@ generate_queue_threads(
   }
 
   
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
   Matrix temp = { 'n', 0,0,0,0,0,0};
 #else
   Matrix temp = { 'n', 0,0,0,0,0};
@@ -354,25 +366,25 @@ void single_product(void *A) {
 
 
   
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
   Matrix temp = { 'n', 0,0,0,0,0,0};
 #else
   Matrix temp = { 'n', 0,0,0,0,0};
 #endif
   
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
   T.Ps.gpu=T.gpu;
 #endif
   
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
   T.As.gpu=T.gpu;
 #endif
   
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
   T.Bs.gpu=T.gpu;
 #endif
   products.pi= T.gpu;
-#if CLBLAS
+#if(CLBLAS||ROCMBLAS)
   if (DEBUG)  printf("GPU %d %s Problem size %d and Memory size %d\n",
 		     T.Ps.gpu,bookmarks[T.Ps.gpu].name,
 		     sizeof(Mat)*3*T.Ps.M*T.Ps.N/(1024),

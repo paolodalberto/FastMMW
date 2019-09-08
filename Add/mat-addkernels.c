@@ -410,8 +410,6 @@ int add_amd_t(DEF(c), DEF(a), DEF(b)) {
 
   int i,j,x,y;
   DEFREGISTERS;
-
-
   /* minimum sizes */
   x = min(a.m,b.m); y = min(a.n,b.n);
   //# pragma omp parallel for

@@ -25,13 +25,15 @@ GOTO_BLAS= $(D)/OpenBLAS/install/lib
 # MKL BLAS
 MKL_BLAS= $(D)/MKL/10.0.5.025/lib/64
 
+# ROC-BLAS
+ROCBLAS=$(D)/../rocBLAS/
 
 ## C and FORTAN compilers. I use gcc but you may change it. 
 CC  = gcc
 FF  = gfortran
 AR = ar rcs
-
-
+CCC = g++
+ 
 ## Machine Specific optimizations 
 #OPT =   $(EXTRA) $(MACROS)   -g  #-std=gnu99 -fPIC -O2  -Wall -msse3       # -m64
 OPT =   $(EXTRA) $(MACROS)  -O1 -g -fPIC #-msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #     # -m64
@@ -47,14 +49,16 @@ INC = -I $(HOMEDIR) -I $(ATLAS)/include -I $(HOMEDIR)/Add -I $(HOMEDIR)/Mul \
 	-I $(HOMEDIR)/Matrices -I $(HOMEDIR)/Sort -I $(HOMEDIR)/Scaling \
 	-I $(HOMEDIR)/PThread -I $(HOMEDIR)/Error \
 	-I $(ARCHITECTUREGPU)/../include -I $(HOMEDIR)/GPU  -I $(HOMEDIR)/C-Thread-Pool/ \
-	-I /opt/rocm/opencl/include/ 
-
+	-I /opt/rocm/opencl/include/ -I $(ROCBLAS)/library/include/ -I $(ROCBLAS)/build/release/rocblas-install/include \
+	-I $(HOMEDIR)/ROCM -I /opt/rocm/hip/include -I /opt/rocm/include -I /opt/rocm/hsa/include 
 
 ## Specific directory for ATLAS and GotoBLAS Library
 
 ALIB = -L $(ATLAS)/lib/ 
 GLIB = -L $(GOTO_BLAS) 
 MKLLIB = -L ${MKL_BLAS}
+ROCBLASLIB= -L $(ROCBLAS)/build/release/library/src/ -L /opt/rocm/lib 
+
 ##CLLIBS = -L /opt/amdgpu-pro/lib/x86_64-linux-gnu/  -L $(ARCHITECTUREGPU)/lib64/ #-L /opt/AMDAPPSDK-3.0/lib/x86_64/
 
 #CLLIBS =   -L /home/paolo/fusion/paolo/Desktop/MM/clBLAS/fijibuild/library -L /opt/rocm/opencl/lib/x86_64/
@@ -66,13 +70,12 @@ FPGALIBS =  \
 	-L /opt/rocm/opencl/lib/x86_64/ -L /home/prj47-rack-31/gemx/fcn/out_hw/xbinst/runtime/lib/x86_64
 
 #	-L /opt/AMDAPPSDK-3.0/lib/x86_64/ #	
-
-
 #opencllibs =  -l OpenCL -l clBLAS -lpthread
 opencllibs =  -l OpenCL -l clblast -lpthread
 
 fpgalibs =  -l OpenCL  -l gemxhost -lpthread -l clblast -l xilinxopencl   
 
+rocblaslib= -l rocblas -l hip_hcc   -lpthread 
 
 ## Libraries 
 atlaslib =-llapack  -lptcblas   -latlas -lm  -lpthread #-lptf77blas -lcblas -lpthread -lf77blas
@@ -122,7 +125,9 @@ code:
 ## defaults object files
 
 obj = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o 
-objgpu = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o GPU/dgemm_multigraphic.o GPU/platform.o  Mul/mat-s3x3x3_23_JinsooOh_20131108a.o Mul/mat-s3x3x3_23_JinsooOh_20131108a-threads.o C-Thread-Pool/thpool.o 
+objgpu = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o GPU/dgemm_multigraphic.o GPU/platform.o  Mul/mat-s3x3x3_23_JinsooOh_20131108a.o Mul/mat-s3x3x3_23_JinsooOh_20131108a-threads.o C-Thread-Pool/thpool.o
+rocmgpu = PThread/pt.o Add/mat-addkernels.o Mul/mat-mulkernels.o Scaling/scaling.o   Mul/mat-s3x3x3_23_JinsooOh_20131108a.o  C-Thread-Pool/thpool.o Mul/mat-s3x3x3_23_JinsooOh_20131108a-threads.o
+rocmgpugpu =  ROCM/multigraphic.o
 objfpga = ${objgpu} FPGA/fpga.o 
 obj2 = $(obj) Error/doubly_compensated_sumc.o Sort/quicksort.o 
 
@@ -285,6 +290,15 @@ ex3gpu: $(objgpu)
 	$(FF) $(OPT) $(INC) Examples/example.3.o $(objgpu)  -o Executable/$(TYPE)/ex3_gpu  \
 	$(math)  $(CLLIBS) $(opencllibs) #$(ALIB) $(atlaslib)
 
+ex3gpurocm: EXTRA_GOTO=-DROCMBLAS  
+ex3gpurocm: MACROS+=-DLIBRARY_PACKAGE
+ex3gpurocm: $(rocmgpu)
+	$(CCC) $(OPT) $(INC) -DROCMBLAS -D__HIP_PLATFORM_HCC__ -DCLBLAS ROCM/multigraphic.c -c -o ROCM/multigraphic.o
+	#$(CCC) $(OPT) $(INC) -DROCMBLAS -D__HIP_PLATFORM_HCC__ -DCLBLAS Mul/mat-s3x3x3_23_JinsooOh_20131108a-threads.c -c -o Mul/mat-s3x3x3_23_JinsooOh_20131108a-threads.oROCM/multigraphic.o		
+	$(CC) -c $(OPT) -DGOTOS_TEST=1 $(INC) $(INCCL) Examples/example.3.c -o Examples/example.3.o
+	$(CC) $(OPT) $(INC) Examples/example.3.o $(rocmgpu)  ROCM/multigraphic.o    -o Executable/$(TYPE)/ex3_gpurocm  \
+	$(math)  $(ROCBLASLIB) $(rocblaslib) #$(ALIB) $(atlaslib)
+
 intgpu:	EXTRA_GOTO=-DCLBLAS 
 intgpu: MACROS+=-DLIBRARY_PACKAGE
 intgpu: $(objgpu) 
@@ -337,11 +351,29 @@ gotos23:$(objgpu)
 	$(CC) -c $(OPT) -DM23_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
 	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos23 $(math)  $(CLLIBS) $(opencllibs) #$(ALIB) $(atlaslib) #$(GLIB) $(gotolib) #$(ALIB) $(atlaslib)
 
+gotos23rocm: EXTRA_GOTO=-DROCMBLAS  
+gotos23rocm: MACROS+=-DLIBRARY_PACKAGE
+gotos23rocm: $(rocmgpu)
+	$(CCC) $(OPT) $(INC) -DROCMBLAS -D__HIP_PLATFORM_HCC__ -DCLBLAS ROCM/multigraphic.c -c -o ROCM/multigraphic.o
+	$(CC) -c $(OPT) -DM23_TEST=1 $(INC) $(INCCL) Examples/example.3.c -o Examples/example.3.o
+	$(CC) $(OPT) $(INC) Examples/example.3.o $(rocmgpu)  ROCM/multigraphic.o    -o Executable/$(TYPE)/gotos23rocm  \
+	$(math)  $(ROCBLASLIB) $(rocblaslib) #$(ALIB) $(atlaslib)
+
 gotos7: EXTRA_GOTO=-DCLBLAS
 gotos7: MACROS+=-DLIBRARY_PACKAGE
 gotos7:$(objgpu)
-	$(CC) -c $(OPT) -DM7_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
-	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos7 $(math)  $(CLLIBS) $(opencllibs) 
+	$(CCC) -c $(OPT) -DM7_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
+	$(CC) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos7 $(math)  $(CLLIBS) $(opencllibs) 
+
+
+gotos7rocm: EXTRA_GOTO=-DROCMBLAS  
+gotos7rocm: MACROS+=-DLIBRARY_PACKAGE
+gotos7rocm: $(rocmgpu)
+	$(CCC) $(OPT) $(INC) -DROCMBLAS -D__HIP_PLATFORM_HCC__ -DCLBLAS ROCM/multigraphic.c -c -o ROCM/multigraphic.o
+	$(CC) -c $(OPT) -DM7_TEST=1 $(INC) $(INCCL) Examples/example.3.c -o Examples/example.3.o
+	$(CC) $(OPT) $(INC) Examples/example.3.o $(rocmgpu)  ROCM/multigraphic.o    -o Executable/$(TYPE)/gotos7rocm  \
+	$(math)  $(ROCBLASLIB) $(rocblaslib) #$(ALIB) $(atlaslib)
+
 
 gotos7p: EXTRA_GOTO=-DFPGA -DCLBLAS 
 gotos7p: MACROS+=-DLIBRARY_PACKAGE
@@ -350,11 +382,27 @@ gotos7p:$(objfpga)
 	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objfpga) -o Executable/$(TYPE)/gotos7p $(math)  $(FPGALIBS) $(fpgalibs) 
 
 
+gotos49rocm: EXTRA_GOTO=-DROCMBLAS  
+gotos49rocm: MACROS+=-DLIBRARY_PACKAGE
+gotos49rocm: $(rocmgpu)
+	$(CCC) $(OPT) $(INC) -DROCMBLAS -D__HIP_PLATFORM_HCC__ -DCLBLAS ROCM/multigraphic.c -c -o ROCM/multigraphic.o
+	$(CC) -c $(OPT) -DM49_TEST=1 $(INC) $(INCCL) Examples/example.3.c -o Examples/example.3.o
+	$(CC) $(OPT) $(INC) Examples/example.3.o $(rocmgpu)  ROCM/multigraphic.o    -o Executable/$(TYPE)/gotos49rocm  \
+	$(math)  $(ROCBLASLIB) $(rocblaslib) #$(ALIB) $(atlaslib)
+
 gotos49: EXTRA_GOTO=-DCLBLAS
 gotos49: MACROS+=-DLIBRARY_PACKAGE
 gotos49:$(objgpu)
 	$(CC) -c $(OPT) -DM49_TEST=1  $(INC) Examples/example.3.c -o Examples/example.3.o
 	$(FF) $(OPT) $(INC)  Examples/example.3.o $(objgpu) -o Executable/$(TYPE)/gotos49 $(math)  $(CLLIBS) $(opencllibs) #$(ALIB) $(atlaslib) #$(GLIB) $(gotolib) #$(ALIB) $(atlaslib)
+
+gotos99rocm: EXTRA_GOTO=-DROCMBLAS  
+gotos99rocm: MACROS+=-DLIBRARY_PACKAGE
+gotos99rocm: $(rocmgpu)
+	$(CCC) $(OPT) $(INC) -DROCMBLAS -D__HIP_PLATFORM_HCC__ -DCLBLAS ROCM/multigraphic.c -c -o ROCM/multigraphic.o
+	$(CC) -c $(OPT) -DM99_TEST=1 $(INC) $(INCCL) Examples/example.3.c -o Examples/example.3.o
+	$(CC) $(OPT) $(INC) Examples/example.3.o $(rocmgpu)  ROCM/multigraphic.o    -o Executable/$(TYPE)/gotos99rocm  \
+	$(math)  $(ROCBLASLIB) $(rocblaslib) #$(ALIB) $(atlaslib)
 
 
 gotos99: EXTRA_GOTO=-DCLBLAS

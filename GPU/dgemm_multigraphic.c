@@ -372,7 +372,7 @@ GEMM(DEF(C),DEF(A),DEF(B))
 {
   int NN;
   C.beta = _zero;
-  if (C.gpu>=0 && C.gpu<4) {
+  if (C.gpu>=0 && C.gpu<DEVICES) {
     //printf("gpu %d \n",C.gpu); 
     return TEMPLATE(C,A,B,1,&(C.gpu));
   } else
@@ -385,7 +385,7 @@ GEMMA(DEF(C),DEF(A),DEF(B))
 {
   int NN;  
   C.beta = _one;
-  if (C.gpu>=0 && C.gpu<4)
+  if (C.gpu>=0 && C.gpu<DEVICES)
     return TEMPLATE(C,A,B,1,&(C.gpu));
   else
     return TEMPLATE(C,A,B,ngpus,gpus);

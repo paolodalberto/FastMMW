@@ -58,7 +58,7 @@ struct matrix_h {
   int m,  n, M, N;   // logical size mxn inside a real matrix size MxN
   char trans;        // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
   float beta;        // multiplicative coefficients
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
   int gpu;          // destination computation
 #endif
 };
@@ -69,7 +69,7 @@ struct matrix_f {
   int m,  n, M, N;   // logical size mxn inside a real matrix size MxN
   char trans;        // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
   float beta;        // multiplicative coefficients
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
   int gpu;          // destination computation
 #endif
 };
@@ -82,7 +82,7 @@ struct matrix_d {
   int m,  n, M, N; // logical size mxn inside a real matrix size MxN
   char trans;      // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
   double beta;        // multiplicative coefficients
-  #ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
   int gpu;          // destination computation
 #endif
           // destination computation
@@ -96,7 +96,7 @@ struct matrix_sc {
   int m,  n, M, N; // logical size mxn inside a real matrix size MxN
   char trans;      // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
   float complex beta;        // multiplicative coefficients
-  #ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
   int gpu;          // destination computation
 #endif
           // destination computation
@@ -110,7 +110,7 @@ struct matrix_dc {
   int m,  n, M, N; // logical size mxn inside a real matrix size MxN
   char trans;      // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
   double complex  beta;        // multiplicative coefficients
-  #ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
   int gpu;          // destination computation
 #endif
           // destination computation
@@ -187,7 +187,7 @@ struct matrix {
   int m,  n, M, N; // logical size mxn inside a real matrix size MxN
   char trans;      // either 'n' no, 't' transpose or 'c' conjugate for complex matrices 
   Mat beta;        // multiplicative coefficients
-  #ifdef CLBLAS
+  #if(CLBLAS||ROCMBLAS)
   int gpu;          // destination computation
 #endif
           // destination computation
@@ -376,7 +376,7 @@ static inline int SIZE(int x, int y) { return ((x)*(y)); }
 // A0 is a quadrant of a matrix A, Q0(A) does the trick 
 static inline Matrix Q0(Matrix x) {
   Matrix x0 = { M0(x.data,x.m,x.n,x.M,x.N), S0(x.m,x.n), x.M, x.N, x.trans, x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
   };
@@ -386,7 +386,7 @@ static inline Matrix Q1(Matrix x) {
 
   if (x.trans=='c' || x.trans =='t') { 
     Matrix x0 = { M2(x.data,x.m,x.n,x.M,x.N), S2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -394,7 +394,7 @@ static inline Matrix Q1(Matrix x) {
   }
   else {
     Matrix x0 = { M1(x.data,x.m,x.n,x.M,x.N), S1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -404,7 +404,7 @@ static inline Matrix Q1(Matrix x) {
 static inline Matrix Q2(Matrix x) {
   if (x.trans=='c' || x.trans =='t') {
     Matrix x0 = { M1(x.data,x.m,x.n,x.M,x.N), S1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -412,7 +412,7 @@ static inline Matrix Q2(Matrix x) {
   }
   else { 
     Matrix x0 = { M2(x.data,x.m,x.n,x.M,x.N), S2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -421,7 +421,7 @@ static inline Matrix Q2(Matrix x) {
 }
 static inline Matrix Q3(Matrix x) {
   Matrix x0 = { M3(x.data,x.m,x.n,x.M,x.N), S3(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -435,7 +435,7 @@ static inline Matrix Q3(Matrix x) {
 
 static inline Matrix R0(Matrix x) {
   Matrix x0 = { MR0(x.data,x.m,x.n,x.M,x.N), SR0(x.m,x.n), x.M, x.N, x.trans, x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -445,7 +445,7 @@ static inline Matrix R1(Matrix x) {
 
   if (x.trans=='c' || x.trans =='t') { 
     Matrix x0 = { MR2(x.data,x.m,x.n,x.M,x.N), SR2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -453,7 +453,7 @@ static inline Matrix R1(Matrix x) {
   }
   else {
     Matrix x0 = { MR1(x.data,x.m,x.n,x.M,x.N), SR1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -463,7 +463,7 @@ static inline Matrix R1(Matrix x) {
 static inline Matrix R2(Matrix x) {
   if (x.trans=='c' || x.trans =='t') {
     Matrix x0 = { MR1(x.data,x.m,x.n,x.M,x.N), SR1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -471,7 +471,7 @@ static inline Matrix R2(Matrix x) {
   }
   else { 
     Matrix x0 = { MR2(x.data,x.m,x.n,x.M,x.N), SR2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -480,7 +480,7 @@ static inline Matrix R2(Matrix x) {
 }
 static inline Matrix R3(Matrix x) {
   Matrix x0 = { MR3(x.data,x.m,x.n,x.M,x.N), SR3(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -490,7 +490,7 @@ static inline Matrix R3(Matrix x) {
 
 static inline Matrix T0(Matrix x) {
   Matrix x0 = { MT0(x.data,x.m,x.n,x.M,x.N), ST0(x.m,x.n), x.M, x.N, x.trans, x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -500,7 +500,7 @@ static inline Matrix T1(Matrix x) {
 
   if (x.trans=='c' || x.trans =='t') { 
     Matrix x0 = { MT2(x.data,x.m,x.n,x.M,x.N), ST2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -508,7 +508,7 @@ static inline Matrix T1(Matrix x) {
   }
   else {
     Matrix x0 = { MT1(x.data,x.m,x.n,x.M,x.N), ST1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -518,7 +518,7 @@ static inline Matrix T1(Matrix x) {
 static inline Matrix T2(Matrix x) {
   if (x.trans=='c' || x.trans =='t') {
     Matrix x0 = { MT1(x.data,x.m,x.n,x.M,x.N), ST1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -526,7 +526,7 @@ static inline Matrix T2(Matrix x) {
   }
   else { 
     Matrix x0 = { MT2(x.data,x.m,x.n,x.M,x.N), ST2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -535,7 +535,7 @@ static inline Matrix T2(Matrix x) {
 }
 static inline Matrix T3(Matrix x) {
   Matrix x0 = { MT3(x.data,x.m,x.n,x.M,x.N), ST3(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -546,7 +546,7 @@ static inline Matrix T3(Matrix x) {
 
 static inline Matrix W0(Matrix x) {
   Matrix x0 = { MV0(x.data,x.m,x.n,x.M,x.N), SV0(x.m,x.n), x.M, x.N, x.trans, x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -556,7 +556,7 @@ static inline Matrix W1(Matrix x) {
 
   if (x.trans=='c' || x.trans =='t') { 
     Matrix x0 = { MV2(x.data,x.m,x.n,x.M,x.N), SV2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -564,7 +564,7 @@ static inline Matrix W1(Matrix x) {
   }
   else {
     Matrix x0 = { MV1(x.data,x.m,x.n,x.M,x.N), SV1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -574,7 +574,7 @@ static inline Matrix W1(Matrix x) {
 static inline Matrix W2(Matrix x) {
   if (x.trans=='c' || x.trans =='t') {
     Matrix x0 = { MV1(x.data,x.m,x.n,x.M,x.N), SV1(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -582,7 +582,7 @@ static inline Matrix W2(Matrix x) {
   }
   else { 
     Matrix x0 = { MV2(x.data,x.m,x.n,x.M,x.N), SV2(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -591,7 +591,7 @@ static inline Matrix W2(Matrix x) {
 }
 static inline Matrix W3(Matrix x) {
   Matrix x0 = { MV3(x.data,x.m,x.n,x.M,x.N), SV3(x.m,x.n), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -606,7 +606,7 @@ static inline Matrix Q1K(Matrix x, int k) {
 
   if (x.trans=='c' || x.trans =='t') { 
     Matrix x0 = { M2K(x.data,x.m,x.n,x.M,x.N,k), S2K(x.m,x.n,k), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -614,7 +614,7 @@ static inline Matrix Q1K(Matrix x, int k) {
   }
   else {
     Matrix x0 = { M1K(x.data,x.m,x.n,x.M,x.N,k), S1K(x.m,x.n,k), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -624,7 +624,7 @@ static inline Matrix Q1K(Matrix x, int k) {
 static inline Matrix Q2K(Matrix x,int k) {
   if (x.trans=='c' || x.trans =='t') {
     Matrix x0 = { M1K(x.data,x.m,x.n,x.M,x.N,k), S1K(x.m,x.n,k), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -632,7 +632,7 @@ static inline Matrix Q2K(Matrix x,int k) {
   }
   else { 
     Matrix x0 = { M2K(x.data,x.m,x.n,x.M,x.N,k), S2K(x.m,x.n,k), x.M, x.N, x.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -701,7 +701,7 @@ static inline  Matrix HDK1(Matrix x, int k) {
 
 static inline Matrix RQ0(Matrix x, Matrix ref) {
   Matrix x0 = { x.data, S0(ref.m,ref.n), x.M, x.N, ref.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -710,7 +710,7 @@ static inline Matrix RQ0(Matrix x, Matrix ref) {
 static inline Matrix RQ1(Matrix x, Matrix ref) {
   if (ref.trans=='c' || ref.trans =='t') { 
     Matrix x0 = { x.data, S2(ref.m,ref.n), x.M, x.N, ref.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };   
@@ -718,7 +718,7 @@ static inline Matrix RQ1(Matrix x, Matrix ref) {
   }
   else {
     Matrix x0 = { x.data, S1(ref.m,ref.n), x.M, x.N, ref.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -728,7 +728,7 @@ static inline Matrix RQ1(Matrix x, Matrix ref) {
 static inline Matrix RQ2(Matrix x, Matrix ref) {
   if (ref.trans=='c' || ref.trans =='t') { 
     Matrix x0 = { x.data, S1(ref.m,ref.n), x.M, x.N, ref.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };   
@@ -736,7 +736,7 @@ static inline Matrix RQ2(Matrix x, Matrix ref) {
   }
   else {
     Matrix x0 = { x.data, S2(ref.m,ref.n), x.M, x.N, ref.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
 };
@@ -745,7 +745,7 @@ static inline Matrix RQ2(Matrix x, Matrix ref) {
 }
 static inline Matrix RQ3(Matrix x, Matrix ref) {
   Matrix x0 = { x.data, S3(ref.m,ref.n), x.M, x.N, ref.trans,x.beta
-#ifdef CLBLAS
+#if(CLBLAS||ROCMBLAS)
 		, x.gpu
 #endif
   };

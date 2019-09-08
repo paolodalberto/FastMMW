@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
 
   printf("#ifdef ROW_MAJOR\n");
   printf("#define UNROLLKERNEL(c,a,b,i,j,y,COMPUTATION)\\\n");
+  printf("if (2*%d<y) {\\\n",unroll);
   printf("UNLOOPREADAT((a.data+i*a.N),0);\\\n");
   printf("  for (j=0;j<y-2*%d;j+=%d) {\\\n",unroll,unroll);
   printf("      COMPUTATION((b.data+i*b.N),j);	\\\n");
@@ -105,9 +106,10 @@ int main(int argc, char **argv) {
   printf("    }\\\n");
   printf("  COMPUTATION((b.data+i*b.N),j);\\\n");
   printf("  UNLOOPWRITEAT((c.data+i*c.N),j);\\\n");
-  printf("  j+=%d;\n",unroll);
+  printf("  j+=%d;}\n",unroll);
 
   printf("#define UNROLLKERNEL_t(c,a,b,i,j,y,COMPUTATION)\\\n");
+  printf("if (2*%d<y) {\\\n",unroll);
   printf("  UNLOOPREADAT_t((a.data+i*a.N),0,a.beta);\\\n");
   printf("\\\n");
   printf("    for (j=0;j<y-2*%d;j+=%d) { \\\n",unroll,unroll);
@@ -117,11 +119,12 @@ int main(int argc, char **argv) {
   printf("    }\\\n");
   printf("  COMPUTATION((b.data+i*b.N),j,b.beta);    \\\n");
   printf("  UNLOOPWRITEAT((c.data+i*c.N),j); \\\n");
-  printf("  j+=%d;\n",unroll);
+  printf("  j+=%d;}\n",unroll);
   printf("#endif\n");
 
   printf("#ifdef COLUMN_MAJOR\n");
   printf("#define UNROLLKERNEL(c,a,b,i,j,y,COMPUTATION)	\\\n");
+  printf("if (2*%d<x) {\\\n",unroll);
   printf("  UNLOOPREADAT((a.data+j*a.M),0); \\\n");
   printf("\\\n");
   printf("    for (i=0;i<x-2*%d;i+=%d) { \\\n",unroll,unroll);
@@ -131,8 +134,9 @@ int main(int argc, char **argv) {
   printf("    }\\\n");
   printf("  COMPUTATION((b.data+j*b.M),i);     \\\n");
   printf("  UNLOOPWRITEAT((c.data+j*c.M),i); \\\n");
-  printf("  i+=%d;\n",unroll);
+  printf("  i+=%d;}\n",unroll);
   printf("#define UNROLLKERNEL_t(c,a,b,i,j,y,COMPUTATION)	\\\n");
+  printf("if (2*%d<x) {\\\n",unroll);
   printf("  UNLOOPREADAT_t((a.data+j*a.M),0,a.beta);			\\\n");
   printf("\\\n");
   printf("  for (i=0;i<x-2*%d;i+=%d) { \\\n",unroll,unroll);
@@ -142,7 +146,7 @@ int main(int argc, char **argv) {
   printf("    }\\\n");
   printf("  COMPUTATION((b.data+j*b.M),i,b.beta);    \\\n");
   printf("  UNLOOPWRITEAT((c.data+j*c.M),i); \\\n");
-  printf("  i+=%d;\n",unroll);
+  printf("  i+=%d;}\n",unroll);
   printf("#endif\n");
   printf(" \n");
   printf("#if (LIBRARY_PACKAGE)						        \n");

@@ -51,12 +51,14 @@ static void *basicComputation( void *s) {
     printf("Basic pi%d  C %d x %d gpu %d\n",mc.pi,mc.c.m, mc.c.n, mc.c.gpu);
     printf("      A %d x %d gpu %d\n",mc.a.m, mc.a.n, mc.a.gpu);
     printf("      B %d x %d gpu %d\n",mc.b.m, mc.b.n, mc.b.gpu);
+    fflush(stdout);
   }
 #else
   if (debug){
     printf("Basic pi %d  C %d x %d\n",mc.pi,mc.c.m, mc.c.n);
     printf("      A %d x %d\n",mc.a.m, mc.a.n);
     printf("      B %d x %d\n",mc.b.m, mc.b.n);
+    fflush(stdout);
   }
 #endif
 
@@ -92,8 +94,8 @@ void pThreadedMatrixComputation(MatrixComputation m,
 
   sched_getaffinity(0,sizeof(current_mask),&(current_mask));
   
-  thr_id = malloc(k * sizeof(int) );
-  p_thread = malloc(k * sizeof(pthread_t) );
+  thr_id = (int*) malloc(k * sizeof(int) );
+  p_thread = (pthread_t*)malloc(k * sizeof(pthread_t) );
   pthread_attr_init(&attr);
   
 
@@ -136,8 +138,8 @@ void MatrixComputations(TAddOperands *args, int len)  {
   int i;
   int k=len;
   
-  thr_id = malloc(k * sizeof(int) );
-  p_thread = malloc(k * sizeof(pthread_t) );
+  thr_id = (int*)malloc(k * sizeof(int) );
+  p_thread = (pthread_t*) malloc(k * sizeof(pthread_t) );
   pthread_attr_init(&attr);
 
 

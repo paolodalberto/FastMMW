@@ -87,6 +87,8 @@
 
 
 #ifdef CLBLAS
+#ifndef ROCMBLAS
+
 // GPU interface
 
 #include <clblast_c.h>
@@ -153,6 +155,56 @@
 #define GEMMA                    z_gpuGEMMA
 #define mm_leaf_computation      z_gpuGEMM
 #define mm_leaf_computation_madd z_gpuGEMMA
+#endif
+#endif
+#endif // def CLBLAS
+
+
+#ifdef ROCMBLAS
+// GPU interface
+
+#include "rocblas.h"
+
+#ifdef HALF_PRECISION
+#define GEMMROCM                   rocblas_hgemm  //clblasSgemm
+#define ROCGEMM                    h_rocgpuGEMM
+#define ROCGEMMA                   h_rocgpuGEMMA
+#define mm_leaf_computation      h_rocgpuGEMM
+#define mm_leaf_computation_madd h_rocgpuGEMMA
+#endif
+
+
+#ifdef SINGLE_PRECISION
+#define GEMMROCM                   rocblas_sgemm  //clblasSgemm
+#define ROCGEMM                    s_rocgpuGEMM
+#define ROCGEMMA                   s_rocgpuGEMMA
+#define mm_leaf_computation      s_rocgpuGEMM
+#define mm_leaf_computation_madd s_rocgpuGEMMA
+#endif
+
+
+#ifdef DOUBLE_PRECISION
+#define GEMMROCM                   rocblas_dgemm  //clblasSgemm
+#define ROCGEMM                    d_rocgpuGEMM
+#define ROCGEMMA                   d_rocgpuGEMMA
+#define mm_leaf_computation      d_rocgpuGEMM
+#define mm_leaf_computation_madd d_rocgpuGEMMA
+#endif
+
+#ifdef SINGLE_COMPLEX
+#define GEMMROCM                   rocblas_cgemm  //clblasSgemm
+#define ROCGEMM                    c_rocgpuGEMM
+#define ROCGEMMA                   c_rocgpuGEMMA
+#define mm_leaf_computation      c_rocgpuGEMM
+#define mm_leaf_computation_madd c_rocgpuGEMMA
+#endif
+
+#ifdef DOUBLE_COMPLEX
+#define GEMMROCM                   rocblas_dgemm  //clblasSgemm
+#define ROCGEMM                    d_rocgpuGEMM
+#define ROCGEMMA                   d_rocgpuGEMMA
+#define mm_leaf_computation      d_rocgpuGEMM
+#define mm_leaf_computation_madd d_rocgpuGEMMA
 #endif
 #endif // def CLBLAS
 

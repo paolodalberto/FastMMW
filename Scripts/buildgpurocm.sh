@@ -6,7 +6,7 @@
 
 set -x 
 
-for n in  #ex3gpu gotos7  gotos23  gotos49 gotos99 gotos343 #intgpu  ex3gpu winograd3gpu ex3_pipe_gpu
+for n in  #gotos23rocm  gotos7rocm  gotos49rocm ex3gpurocm
 do
     /usr/bin/make clean add-gen ${n} MACROS="-DHALF_PRECISION   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=45000"   TYPE=Half     UNROLL=2  > out0 2>&1
     /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=33000"   TYPE=Single   UNROLL=2  > out1 2>&1
@@ -16,14 +16,14 @@ do
 done 
 
 
-for n in gotos23  gotos7  gotos49 ex3gpu #gotos23 gotos7  gotos99 gotos343  winograd3gpu ex3_pipe_gpu #intgpu  ex3gpu
+for n in gotos23rocm  gotos7rocm  gotos49rocm ex3gpurocm #gotos23 gotos7  gotos99 gotos343  winograd3gpu ex3_pipe_gpu #intgpu  ex3gpu
 do
     
     /usr/bin/make clean add-gen ${n} MACROS="-DHALF_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=23000"   TYPE=Half UNROLL=2 > out1 2>&1
     /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=16000"   TYPE=Single UNROLL=2 > out1 2>&1
     /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_PRECISION -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=12000"   TYPE=Double UNROLL=2 > out2 2>&1
-    /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=12000"   TYPE=SComplex UNROLL=8 > out3 2>&1
-    /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=8000"   TYPE=DComplex UNROLL=16 > out4 2>&1
+#    /usr/bin/make clean add-gen ${n} MACROS="-DSINGLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=12000"   TYPE=SComplex UNROLL=8 > out3 2>&1
+#    /usr/bin/make clean add-gen ${n} MACROS="-DDOUBLE_COMPLEX   -DLIBRARY_PACKAGE -DAUTOMATIC -DLEAF=8000"   TYPE=DComplex UNROLL=16 > out4 2>&1
     
 done 
 

@@ -1,3 +1,6 @@
+
+
+
 #!/bin/bash
 
 #set -x
@@ -34,10 +37,24 @@ function small_body_cp {
 
     g7 $1 $2 $3 $4 $5 
     g23 $1 $2 $3 $4 $5 
-    g49 $1 $2 $3 $4 $5 
+    g49 $1 $2 $3 $4 $5
+#    g99 $1 $2 $3 $4 $5
+#    g343 $1 $2 $3 $4 $5
+
 }
 
 
+function small_rocm {
+
+    ./build/release/clients/staging/rocblas-bench -f gemm -r $1 -m $2  -n $2 -k $2   --device $3 -i 2 | grep "N,N"
+} 
+
+function execute { 
+    for i in 17000  20000 22000 25000 28000 33000 35000 38000 40000 42000
+    do
+	small_body_cp $1 $i $2 $3 $4
+    done
+}
 function execute42 { 
     for i in 17000  20000 22000 25000 28000 33000 35000 38000 40000 42000
     do

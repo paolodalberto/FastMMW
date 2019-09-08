@@ -9,13 +9,14 @@
 #Q = read.csv("result8x8_0-2.txt",sep=",")
 #Q = read.csv("result.clblast.txt",sep=",")
 #Q = read.csv("result.clblast.tuned.txt",sep=",")
-Q = read.csv("results.2019-07029.csv",sep=",")
-
+#Q = read.csv("results.2019-07029.csv",sep=",")
+Q = read.csv("roc.results.2.txt",sep=",")
+#Q = read.csv("roc.results.viionly_2.txt",sep=",")
 Types = unique(Q$TYPE)
 
 C = c("blue",     "red",     "green",    "yellow", "black",
       "darkblue", "darkred", "darkgreen","yellow3","gray",
-      'azure',    'orange',  'green',    'yellow4', 'pink' )
+      'orange',    'brown',  'green',    'yellow4', 'pink' )
 L = c( 1         , 2,         3,         4,         5,
        6,          1,         2,         3,         4,
        5,         6,           1,         2,          3 )
@@ -32,7 +33,7 @@ for (T in Types) {
     algs = unique(Single$NAME)
 
     
-    algs = algs[grepl("2x",algs)]
+    #algs = algs[grepl("2x",algs)]
     algs = sort(algs)
     
     print(algs)
@@ -55,10 +56,14 @@ for (T in Types) {
 
     i = 1
     for (a in algs) {
-        
-        w = Algs[[a]]
+        w = Algs[[a]]	  
         str(w)
-        lines(w$SIZE, w$HOT, col=C[i],lty=L[i],lwd=2)
+        if (length(w$SIZE)<=1) {	
+          lines(w$SIZE, w$HOT, col=C[i],lty=L[i],lwd=2,type="p")
+	}
+	else {
+	  lines(w$SIZE, w$HOT, col=C[i],lty=L[i],lwd=2)
+	}
         i = i +1
     }
     legend("bottomright", legend=algs,col=C,lwd=3,lty=L)

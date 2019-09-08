@@ -51,8 +51,8 @@ int gpus[4] = {0,1,2,3};
 //                         Elle       Elle     Fiji         Fiji    
 
 
-char *_names[DEVICES] =  { "fiji", "fiji", "ellesmere", "ellesmere" }; 
-int   _sizes[DEVICES] =  {   3956940,     4148964,      16580608,  16580608};
+char *_names[DEVICES] =  { "fiji", "fiji", "ellesmere", "ellesmere","" }; 
+int   _sizes[DEVICES] =  {   3956940,     4148964,      16580608,  16580608,16580608};
 
 /* *********************
  * We activate the platform we want and collect the set of devices availables
