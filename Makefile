@@ -36,7 +36,7 @@ CCC = g++
  
 ## Machine Specific optimizations 
 #OPT =   $(EXTRA) $(MACROS)   -g  #-std=gnu99 -fPIC -O2  -Wall -msse3       # -m64
-OPT =   $(EXTRA) $(MACROS)  -O1 -g -fPIC #-msse2 -msse4 -m64  #-mtune=zen #-m64 -march=opteron -mtune=opteron -m64   #     # -m64
+OPT =   $(EXTRA) $(MACROS)  -O0 -g -fPIC 
 
 #ARCHITECTUREGPU=/usr/local
 #ARC=Fiji
@@ -105,7 +105,7 @@ EXTRA = $(EXTRA_GOTO)  $(EXTRA_ATLAS)
 ## Default rule to build the object files
 #$(CC) -E  $(OPT)  $(INC) $< -o $@.c
 .c.o:
-	$(CC) -c  $(OPT) $(INC) $< -o $@
+	$(CC) -c  $(OPT) $(INC)  $< -o $@
 
 
 
@@ -156,20 +156,20 @@ lib     : clean
 	make clean dcomplexlib
 
 
-singlelib: MACROS = -DSINGLE_PRECISION -DLIBRARY_PACKAGE
+singlelib: MACROS = -DSINGLE_PRECISION -DLIBRARY_PACKAGE -Dmm_leaf_computation=mm_leaf_computation_s -D GOTO_BLAS
 singlelib: UNROLL = 32 	
 singlelib: $(obj2)
 	$(AR) $(HOMEDIR)/lib/libsfastmm.a $(obj2)
 
-doublelib: MACROS = -DDOUBLE_PRECISION -DLIBRARY_PACKAGE
+doublelib: MACROS = -DDOUBLE_PRECISION -DLIBRARY_PACKAGE -Dmm_leaf_computation=mm_leaf_computation_d -D GOTO_BLAS
 doublelib: $(obj2)
 	$(AR) $(HOMEDIR)/lib/libdfastmm.a $(obj2)
 
-scomplexlib: MACROS = -DSINGLE_COMPLEX -DLIBRARY_PACKAGE
+scomplexlib: MACROS = -DSINGLE_COMPLEX -DLIBRARY_PACKAGE -Dmm_leaf_computation=mm_leaf_computation_s -D GOTO_BLAS
 scomplexlib: $(obj2)
 	$(AR) $(HOMEDIR)/lib/libscfastmm.a $(obj2)
 
-dcomplexlib: MACROS = -DDOUBLE_COMPLEX -DLIBRARY_PACKAGE
+dcomplexlib: MACROS = -DDOUBLE_COMPLEX -DLIBRARY_PACKAGE -Dmm_leaf_computation=mm_leaf_computation_z -D GOTO_BLAS
 dcomplexlib: $(obj2)
 	$(AR) $(HOMEDIR)/lib/libdcfastmm.a $(obj2)
 
@@ -202,17 +202,17 @@ summerrordcomplex:  FASTLIBS= -ldcfastmm
 summerrordcomplex: sumerror
 
 sumerror: Examples/error.o 
-	$(FF) $(OPT) $(INC)  Examples/error.o -o $(DEST) $(GLIB) $(gotolib)  -lm  $(FASTLIBDIR) $(FASTLIBS) #$(ALIB) $(atlaslib)
+	$(FF) $(OPT) $(INC)  Examples/error.o -o $(DEST) $(GLIB) $(gotolib)   $(FASTLIBDIR) $(FASTLIBS) 
 
 mixed: MACROS = -DAPPLICATION -DGOTO_BLAS
 mixed: INC+=-I $(HOMEDIR)/Mixed
 mixed: Examples/example.mix.3.o Mixed/mixed_precision.o
-	$(FF) $(OPT) $(INC)  Examples/example.mix.3.o Mixed/mixed_precision.o -o Executable/mixed $(GLIB) $(gotolib)  -lm  $(FASTLIBDIR) $(FASTLIBS) #$(ALIB) $(atlaslib)
+	$(FF) $(OPT) $(INC)  Examples/example.mix.3.o Mixed/mixed_precision.o -o Executable/mixed $(GLIB) $(gotolib)    $(FASTLIBDIR) $(FASTLIBS)  -lpthread  #$(ALIB) $(atlaslib)
 
 mixed-error: MACROS = -DAPPLICATION -DGOTO_BLAS
-mixed-error: INC+=-I $(HOMEDIR)/Mixed
+mixed-error: INC+=-I $(HOMEDIR)/Mixed 
 mixed-error: Examples/example.mix.error.o Mixed/mixed_precision.o
-	$(FF) $(OPT) $(INC)  Examples/example.mix.error.o Mixed/mixed_precision.o -o Executable/mixed-error $(GLIB) $(gotolib)  -lm  $(FASTLIBDIR) $(FASTLIBS) #$(ALIB) $(atlaslib)
+	$(FF) $(OPT) $(INC)  Examples/example.mix.error.o Mixed/mixed_precision.o -o Executable/mixed-error $(FASTLIBDIR) $(FASTLIBS) $(GLIB) $(gotolib)  
 
 mixed-error-complex: MACROS = -DAPPLICATION -DGOTO_BLAS
 mixed-error-complex: INC+=-I $(HOMEDIR)/Mixed

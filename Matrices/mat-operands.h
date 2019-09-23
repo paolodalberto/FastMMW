@@ -215,8 +215,8 @@ typedef struct matrix Matrix;
  * 
  */
 
-//#define COLUMN_MAJOR 1
-#define ROW_MAJOR 1
+#define COLUMN_MAJOR 1
+//#define ROW_MAJOR 1
 
 
 

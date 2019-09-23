@@ -1,4 +1,4 @@
-/* arguments 2 unroll 2 */
+/* arguments 2 unroll 8 */
 /* This file has been automatically generated  */
 #ifndef MAT_ADD_KERNELS 
 #define MAT_ADD_KERNELS 1 
@@ -8,81 +8,123 @@
 #define UNLOOPREADAT(a,j) { \
 a0 = a[j+0]; \
 a1 = a[j+1]; \
+a2 = a[j+2]; \
+a3 = a[j+3]; \
+a4 = a[j+4]; \
+a5 = a[j+5]; \
+a6 = a[j+6]; \
+a7 = a[j+7]; \
 }
 #define UNLOOPWRITEAT(a,j) { \
 a[j+0] = a0; \
 a[j+1] = a1; \
+a[j+2] = a2; \
+a[j+3] = a3; \
+a[j+4] = a4; \
+a[j+5] = a5; \
+a[j+6] = a6; \
+a[j+7] = a7; \
 }
 #define UNLOOPCOMPUTE(b,j) { \
 a0 += b[j+0]; \
 a1 += b[j+1]; \
+a2 += b[j+2]; \
+a3 += b[j+3]; \
+a4 += b[j+4]; \
+a5 += b[j+5]; \
+a6 += b[j+6]; \
+a7 += b[j+7]; \
 }
 #define UNLOOPCOMPUTESUB(b,j) { \
 a0 -= b[j+0]; \
 a1 -= b[j+1]; \
+a2 -= b[j+2]; \
+a3 -= b[j+3]; \
+a4 -= b[j+4]; \
+a5 -= b[j+5]; \
+a6 -= b[j+6]; \
+a7 -= b[j+7]; \
 }
 #define UNLOOPREADAT_t(a,j,beta) { \
 a0 = beta*a[j+0]; \
 a1 = beta*a[j+1]; \
+a2 = beta*a[j+2]; \
+a3 = beta*a[j+3]; \
+a4 = beta*a[j+4]; \
+a5 = beta*a[j+5]; \
+a6 = beta*a[j+6]; \
+a7 = beta*a[j+7]; \
 }
 #define UNLOOPCOMPUTE_t(b,j,beta) { \
 a0 += beta*b[j+0]; \
 a1 += beta*b[j+1]; \
+a2 += beta*b[j+2]; \
+a3 += beta*b[j+3]; \
+a4 += beta*b[j+4]; \
+a5 += beta*b[j+5]; \
+a6 += beta*b[j+6]; \
+a7 += beta*b[j+7]; \
 }
 #define UNLOOPCOMPUTESUB_t(b,j,beta) { \
 a0 -= beta*b[j+0]; \
 a1 -= beta*b[j+1]; \
+a2 -= beta*b[j+2]; \
+a3 -= beta*b[j+3]; \
+a4 -= beta*b[j+4]; \
+a5 -= beta*b[j+5]; \
+a6 -= beta*b[j+6]; \
+a7 -= beta*b[j+7]; \
 }
 #ifdef ROW_MAJOR
 #define UNROLLKERNEL(c,a,b,i,j,y,COMPUTATION)\
-if (2*2<y) {\
+if (2*8<y) {\
 UNLOOPREADAT((a.data+i*a.N),0);\
-  for (j=0;j<y-2*2;j+=2) {\
+  for (j=0;j<y-2*8;j+=8) {\
       COMPUTATION((b.data+i*b.N),j);	\
       UNLOOPWRITEAT((c.data+i*c.N),j);\
-      UNLOOPREADAT((a.data+i*a.N),j+2);\
+      UNLOOPREADAT((a.data+i*a.N),j+8);\
     }\
   COMPUTATION((b.data+i*b.N),j);\
   UNLOOPWRITEAT((c.data+i*c.N),j);\
-  j+=2;}
+  j+=8;}
 #define UNROLLKERNEL_t(c,a,b,i,j,y,COMPUTATION)\
-if (2*2<y) {\
+if (2*8<y) {\
   UNLOOPREADAT_t((a.data+i*a.N),0,a.beta);\
 \
-    for (j=0;j<y-2*2;j+=2) { \
+    for (j=0;j<y-2*8;j+=8) { \
       COMPUTATION((b.data+i*b.N),j,b.beta);	 \
       UNLOOPWRITEAT((c.data+i*c.N),j); \
-      UNLOOPREADAT_t((a.data+i*a.N),j+2,a.beta);	\
+      UNLOOPREADAT_t((a.data+i*a.N),j+8,a.beta);	\
     }\
   COMPUTATION((b.data+i*b.N),j,b.beta);    \
   UNLOOPWRITEAT((c.data+i*c.N),j); \
-  j+=2;}
+  j+=8;}
 #endif
 #ifdef COLUMN_MAJOR
 #define UNROLLKERNEL(c,a,b,i,j,y,COMPUTATION)	\
-if (2*2<x) {\
+if (2*8<x) {\
   UNLOOPREADAT((a.data+j*a.M),0); \
 \
-    for (i=0;i<x-2*2;i+=2) { \
+    for (i=0;i<x-2*8;i+=8) { \
       COMPUTATION((b.data+j*b.M),i);				\
       UNLOOPWRITEAT((c.data+j*c.M),i); \
-      UNLOOPREADAT((a.data+j*a.M),i+2);\
+      UNLOOPREADAT((a.data+j*a.M),i+8);\
     }\
   COMPUTATION((b.data+j*b.M),i);     \
   UNLOOPWRITEAT((c.data+j*c.M),i); \
-  i+=2;}
+  i+=8;}
 #define UNROLLKERNEL_t(c,a,b,i,j,y,COMPUTATION)	\
-if (2*2<x) {\
+if (2*8<x) {\
   UNLOOPREADAT_t((a.data+j*a.M),0,a.beta);			\
 \
-  for (i=0;i<x-2*2;i+=2) { \
+  for (i=0;i<x-2*8;i+=8) { \
       COMPUTATION((b.data+j*b.M),i,b.beta);	 \
       UNLOOPWRITEAT((c.data+j*c.M),i); \
-      UNLOOPREADAT_t((a.data+j*a.M),i+2,a.beta);	\
+      UNLOOPREADAT_t((a.data+j*a.M),i+8,a.beta);	\
     }\
   COMPUTATION((b.data+j*b.M),i,b.beta);    \
   UNLOOPWRITEAT((c.data+j*c.M),i); \
-  i+=2;}
+  i+=8;}
 #endif
  
 #if (LIBRARY_PACKAGE)						        
@@ -280,5 +322,5 @@ int z_ptcopy(Z_Matrix c, Z_Matrix a, Z_Matrix b);
 void z_randomInitialization(Z_Matrix a, int seed1, int seed2);				        
 void z_randomInitializationError(Z_Matrix a, int seed1);				        
 #endif  // if LIBRARY else APPLICATION                                                                
-#define DEFREGISTERS Mat a0,a1;
+#define DEFREGISTERS Mat a0,a1,a2,a3,a4,a5,a6,a7;
 #endif // MODULE 

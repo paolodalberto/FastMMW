@@ -260,7 +260,7 @@ void dcmul(DEF(c), DEF(a), DEF(b)) {
 
 #endif
     if (1) {
-      printf(" dcmsum \n");
+      printf(" dcmsum %d \n", d[i].pi);
       print(d[i].c);
       print(d[i].a);
       print(d[i].b);

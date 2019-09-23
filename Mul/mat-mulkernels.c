@@ -185,7 +185,7 @@ int  mulpt(DEF(c), DEF(a), DEF(b)) {
     d[i].b.data = b.data+b.N*(i*l);
 
 #endif
-    if (1) {
+    if (0) {
       printf(" dcmsum \n");
       print(d[i].c);
       print(d[i].a);
@@ -228,7 +228,7 @@ int  mulpt(DEF(c), DEF(a), DEF(b)) {
   d[i].b.data = b.data+b.N*(i*l);
 
 #endif
-  if (1) {
+  if (0) {
     printf(" dcmsum \n");
     print(d[i].c);
     print(d[i].a);

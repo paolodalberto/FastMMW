@@ -207,13 +207,16 @@ int main() {
 
 
   printf("DCS MUL single\n");
-  TIMING_COLD(CMC(sr, =, sa, s_dcmul, sb),time_mul,10);
+  //TIMING_COLD(CMC(sr, =, sa, s_dcmul, sb),time_mul,10);
+  TIMING_COLD(CMC(sr, =, sa, mm_leaf_computation_s, sb),time_mul,10);
   END_CLOCK;
   
   printf("DCS MUL double\n");
-  TIMING_COLD(CMC(dr, =, da, d_dcmul, db),time_mul,10);
+  //TIMING_COLD(CMC(dr, =, da, d_dcmul, db),time_mul,10);
+  TIMING_COLD(CMC(dr, =, da, mm_leaf_computation_d, db),time_mul,10);
   
-  printf("\n S DCS w.r.t. D_DCS              "); error_analysis_s_d(sr,dr);printf("\n");
+  printf("\n S DCS w.r.t. D_DCS              \n");
+  error_analysis_s_d(sr,dr);printf("\n");
 
   printf("RBC MUL single\n");
   TIMING_COLD(CMC(sc, =, sa, s_mulpt , sb),time_mul,10);
@@ -260,7 +263,7 @@ int main() {
   printf("D_Strassen    w.r.t. D_DCS   ");  d_error_analysis(dc,dr);printf("\n");
 
 
-  printf("Winograd-Mardo double\n");
+  printf("Winograd-Marco double\n");
   TIMING_COLD(CMC(dc, =, da, d_bm                 , db),time_mul,10);
   printf("D_Winograd-Marco   w.r.t. D_DCS   ");  d_error_analysis(dc,dr);printf("\n");
 

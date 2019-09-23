@@ -254,7 +254,7 @@ void dotdiff_ABS_S_D(double  *z, float *a, double *b, int n) {
   int k;
   //  printf("dotdiff\n");
   for (k=0;k<n;k++) { 
-    z[k] =fabs((double)a[k]-b[k]);
+    z[k] =fabs(((double)a[k])-b[k]);
     //    printf("%e = abs(%e - %e) \n",z[k], a[k],b[k]); 
   }
   //  printf(" k=%d\n",k);
@@ -264,7 +264,7 @@ void dotdiff_ABS_C_Z(double *z, float complex *a, double complex *b, int n) {
   int k;
   //  printf("dotdiff\n");
   for (k=0;k<n;k++) { 
-    z[k] =cabs((double complex)a[k]-b[k]);
+    z[k] =cabs(((double complex)a[k])-b[k]);
     //    printf("%e = abs(%e - %e) \n",z[k], a[k],b[k]); 
   }
 
@@ -278,12 +278,18 @@ void error_analysis_s_d(S_Matrix a,D_Matrix b) {
   double me,mre;
   double ae,pe;
   D_Matrix D;
+
+  
   D.m =D.M = a.m;
   D.n =D.N = a.n;
   D.trans = a.trans;
-
-  D.data = (double *) calloc(size,sizeof(Mat));
+  s_print(a); printf("%f\n", a.data[0]);
+  d_print(b); printf("%e\n", b.data[0]);
+  printf("size %d\n",size);
+  D.data = (double *) calloc(size,sizeof(double));
   dotdiff_ABS_S_D(D.data,a.data,b.data,size);
+  //for (int i=0;i<size;i++) 
+  //  printf("%f %e %e \n",a.data[i],b.data[i],D.data[i]) ;
   //printf(" computing max error %d %d %d \n",size, a.M*a.M,b.M*b.N);
   me = d_max_error(D.data,size,&pos);
   printf("Maximum-absolute-error  %e ", fabs(me)); 
@@ -304,7 +310,7 @@ void error_analysis_s_d(S_Matrix a,D_Matrix b) {
 #if(ROW_MAJOR) 
   printf("row %d col %d",pos/D.N,pos%D.N);
 #endif
-  
+  printf("\n");
   free(D.data);
 }
 void error_analysis_c_z(C_Matrix a,Z_Matrix b) { 
@@ -318,9 +324,12 @@ void error_analysis_c_z(C_Matrix a,Z_Matrix b) {
   D.n =D.N = a.n;
   D.trans = a.trans;
 
-  D.data = (double *) calloc(size,sizeof(Mat));
+  D.data = (double complex *) calloc(size,sizeof(double complex));
   dotdiff_ABS_C_Z(D.data,a.data,b.data,size);
   //printf(" computing max error ");
+  for (int i=0;i<size;i++) 
+    printf("%f %e %e \n",a.data[i],b.data[i],D.data[i]) ;
+  
   me = d_max_error(D.data,size,&pos);
   printf("Maximum-absolute-error  %e ", fabs(me)); 
 #if(COLUMN_MAJOR) 

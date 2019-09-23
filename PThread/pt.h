@@ -74,6 +74,7 @@ static int _T[NUM_THREADS] = {2,8};
 #define pThreadedMatrixComputation S_pThreadedMatrixComputation
 #define TAddOperands               S_TAddOperands
 #define MatrixComputation          S_MatrixComputation
+#define MatrixComputationsSequential S_MatrixComputationsSequential
 #define MatrixComputations         S_MatrixComputations
 #define DivideOperands             S_DivideOperands
 
@@ -81,12 +82,14 @@ static int _T[NUM_THREADS] = {2,8};
 #define pThreadedMatrixComputation D_pThreadedMatrixComputation
 #define TAddOperands               D_TAddOperands
 #define MatrixComputation          D_MatrixComputation
+#define MatrixComputationsSequential D_MatrixComputationsSequential
 #define DivideOperands             D_DivideOperands
 #define MatrixComputations         D_MatrixComputations
 #elif(SINGLE_COMPLEX && LIBRARY_PACKAGE)
 #define pThreadedMatrixComputation C_pThreadedMatrixComputation
 #define TAddOperands               C_TAddOperands
 #define MatrixComputation          C_MatrixComputation
+#define MatrixComputationsSequential C_MatrixComputationsSequential
 #define DivideOperands             C_DivideOperands
 #define MatrixComputations         C_MatrixComputations
 
@@ -96,7 +99,7 @@ static int _T[NUM_THREADS] = {2,8};
 #define MatrixComputation          Z_MatrixComputation
 #define DivideOperands             Z_DivideOperands
 #define MatrixComputations         Z_MatrixComputations
-
+#define MatrixComputationsSequential Z_MatrixComputationsSequential
 #endif
 
 typedef int  (*MatrixComputation)(DEF(c),DEF(a),DEF(b));

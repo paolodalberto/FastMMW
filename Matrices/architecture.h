@@ -479,7 +479,7 @@ static double complex _one_z=1+0*I;
 #endif // ATHLON
 #include <stdlib.h>
 
-
+#if(CLBLAS & PADDING)
 static void* PALLOC(DEF(x)) {
   void *pointer;
 
@@ -491,7 +491,7 @@ static void* PALLOC(DEF(x)) {
     return pointer;
   }
 }
-
+#endif
     
 #define ALLOC(x)  malloc((x).M*(x).N*sizeof(Mat))
 #define CALLOC(x) calloc((x).M*(x).N,sizeof(Mat))

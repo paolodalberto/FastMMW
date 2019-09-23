@@ -234,25 +234,25 @@ int main() {
 
   
   printf("Gotos single");
-  TIMING(CMC(sc, =, sa, mm_leaf_computation_s, sb),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(sc, =, sa, mm_leaf_computation_s, sb),time_mul,MULINTERVAL);
   printf("Winograd single");
-  TIMING(CMC(st, =, sa, s_wm                 , sb),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(st, =, sa, s_wm                 , sb),time_mul,MULINTERVAL);
 
   printf("Gotos double");
-  TIMING(CMC(dc, =, da, mm_leaf_computation_d, db),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(dc, =, da, mm_leaf_computation_d, db),time_mul,MULINTERVAL);
   printf("Winograd double");
-  TIMING(CMC(dt, =, da, d_wm                 , db),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(dt, =, da, d_wm                 , db),time_mul,MULINTERVAL);
   
   printf("Gotos complex");
-  TIMING(CMC(cc, =, ca, mm_leaf_computation_c, cb),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(cc, =, ca, mm_leaf_computation_c, cb),time_mul,MULINTERVAL);
   printf("Winograd complex");
-  TIMING(CMC(ct, =, ca, c_wm                 , cb),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(ct, =, ca, c_wm                 , cb),time_mul,MULINTERVAL);
 
   
   printf("Gotos complex double");
-  TIMING(CMC(zc, =, za, mm_leaf_computation_z, zb),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(zc, =, za, mm_leaf_computation_z, zb),time_mul,MULINTERVAL);
   printf("Winograd complex double");
-  TIMING(CMC(zt, =, za, z_wm                 , zb),time_mul,MULINTERVAL);
+  TIMING_COLD(CMC(zt, =, za, z_wm                 , zb),time_mul,MULINTERVAL);
 
  
   if ((diff = s_comp(sc,st))) { 
