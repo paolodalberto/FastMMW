@@ -1,5 +1,8 @@
 ![Build status](http://178.62.170.124:3000/pithikos/c-thread-pool/badge/?branch=master)
 
+# Paolo D'Alberto IS NOT THE AUTHOR OF THIS
+
+
 # C Thread Pool
 
 This is a minimal but advanced threadpool implementation.
